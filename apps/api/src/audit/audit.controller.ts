@@ -4,6 +4,7 @@ import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { AuditAction } from '@prisma/client';
 
 @ApiTags('Audit')
 @ApiBearerAuth()
@@ -26,8 +27,15 @@ export class AuditController {
     const skip = (Number(page) - 1) * Number(limit);
     const where: any = {};
     if (userId) where.userId = userId;
-    if (entity) where.entity = entity;
-    if (action) where.action = action;
+    if (entity) {
+      where.entity = { contains: entity, mode: 'insensitive' };
+    }
+    if (action) {
+      const actionKey = action.trim().toUpperCase() as AuditAction;
+      if (Object.values(AuditAction).includes(actionKey)) {
+        where.action = actionKey;
+      }
+    }
     if (startDate || endDate) {
       where.createdAt = {};
       if (startDate) where.createdAt.gte = new Date(startDate);

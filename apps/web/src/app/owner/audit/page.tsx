@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { auditApi } from '@/lib/api';
 import { Filter } from 'lucide-react';
 import { formatDateTime } from '@/lib/utils';
+import toast from 'react-hot-toast';
 
 export default function AuditPage() {
   const [logs, setLogs] = useState<any[]>([]); const [loading, setLoading] = useState(true);
@@ -13,7 +14,12 @@ export default function AuditPage() {
     setLoading(true);
     try {
       const res = await auditApi.list({ page, limit: 50, entity: filterEntity||undefined, action: filterAction||undefined });
-      setLogs(res.data); setTotal(res.total);
+      setLogs(Array.isArray(res) ? res : (res?.data || []));
+      setTotal(Array.isArray(res) ? res.length : (res?.total || 0));
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Gagal memuat audit log');
+      setLogs([]);
+      setTotal(0);
     } finally { setLoading(false); }
   }, [page, filterEntity, filterAction]);
   useEffect(()=>{ load(); },[load]);
@@ -38,7 +44,7 @@ export default function AuditPage() {
               <td style={{ fontSize:12 }}>{l.user?.name||'System'}<div style={{ fontSize:10,color:'var(--color-text-muted)' }}>{l.user?.role}</div></td>
               <td><span className={`badge ${actionColor[l.action]||'badge-neutral'}`} style={{ fontSize:10 }}>{l.action}</span></td>
               <td style={{ fontSize:12 }}>{l.entity}</td>
-              <td style={{ fontSize:10,fontFamily:'monospace',color:'var(--color-text-muted)' }}>{l.entityId?.slice(0,12)+'...' || '—'}</td>
+              <td style={{ fontSize:10,fontFamily:'monospace',color:'var(--color-text-muted)' }}>{l.entityId ? `${String(l.entityId).slice(0, 12)}...` : '—'}</td>
             </tr>
           ))}
         </tbody>
