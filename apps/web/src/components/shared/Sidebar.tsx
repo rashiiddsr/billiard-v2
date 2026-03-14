@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Users, ClipboardList, CreditCard, Package,
   UtensilsCrossed, BarChart3, Wallet, Archive, LogOut, User,
   Building2, ScrollText, Timer, ListOrdered, UserCheck,
-  CalendarCheck, Clock, ChevronRight, Billiard,
+  CalendarCheck, Clock, ChevronRight
 } from 'lucide-react';
 
 interface NavItem {

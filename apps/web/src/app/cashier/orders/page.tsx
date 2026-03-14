@@ -14,7 +14,14 @@ export default function CashierOrdersPage() {
 
   useEffect(() => {
     Promise.all([api.get('/billing/sessions/active'), menuApi.list({ isActive: true })])
-      .then(([s, m]) => { setSessions(s.data); setMenu(m); }).catch(() => {});
+      .then(([s, m]) => {
+        setSessions(Array.isArray(s?.data) ? s.data : []);
+        setMenu(Array.isArray(m?.data) ? m.data : []);
+      })
+      .catch(() => {
+        setSessions([]);
+        setMenu([]);
+      });
   }, []);
 
   const addToCart = (item: any) => {

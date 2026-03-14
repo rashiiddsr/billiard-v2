@@ -245,7 +245,7 @@ export default function WaitingListPage() {
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          z: 9999, padding: 20,
+          zIndex: 9999, padding: 20,
         }}>
           <div className="card" style={{ width: '100%', maxWidth: 480 }}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
