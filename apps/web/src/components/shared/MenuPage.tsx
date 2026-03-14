@@ -25,7 +25,9 @@ export default function MenuPage({ canEdit = true }: Props) {
     setLoading(true);
     try {
       const [mRes, cRes] = await Promise.all([menuApi.list({ search: search || undefined, category: catFilter || undefined }), menuApi.categories()]);
-      setItems(mRes); setCats(cRes);
+      const nextItems = Array.isArray(mRes) ? mRes : (mRes?.data || []);
+      setItems(nextItems);
+      setCats(cRes);
     } finally { setLoading(false); }
   }, [search, catFilter]);
   useEffect(() => { load(); }, [load]);
