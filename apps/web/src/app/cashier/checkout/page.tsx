@@ -21,7 +21,10 @@ export default function CashierCheckoutPage() {
     if (!id) { setSession(null); return; }
     setLoading(true);
     try { setSession(await billingApi.getSession(id)); }
-    catch () {} finally { setLoading(false); }
+    catch {
+      setSession(null);
+      toast.error('Gagal memuat detail sesi');
+    } finally { setLoading(false); }
   };
 
   const totalAmount = session ? Number(session.totalAmount) : 0;

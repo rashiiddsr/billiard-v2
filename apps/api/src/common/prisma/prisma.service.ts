@@ -12,10 +12,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
           url: process.env.DATABASE_URL,
         },
       },
-      log:
-        process.env.NODE_ENV === 'development'
-          ? [{ emit: 'stdout', level: 'query' }, { emit: 'stdout', level: 'error' }]
-          : [{ emit: 'stdout', level: 'error' }],
+      log: [{ emit: 'stdout', level: 'error' }],
     });
   }
 
