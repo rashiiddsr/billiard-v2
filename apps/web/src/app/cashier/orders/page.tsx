@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { ordersApi, api, menuApi } from '@/lib/api';
+import { ordersApi, api, menuApi, paymentsApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Plus, X, Check } from 'lucide-react';
 import { formatRupiah } from '@/lib/utils';
@@ -11,6 +11,10 @@ export default function CashierOrdersPage() {
   const [selSession, setSelSession] = useState('');
   const [cart, setCart] = useState<{ menuItemId: string; name: string; price: number; qty: number }[]>([]);
   const [busy, setBusy] = useState(false);
+  const [showPaymentPopup, setShowPaymentPopup] = useState(false);
+  const [standaloneOrderId, setStandaloneOrderId] = useState('');
+  const [payMethod, setPayMethod] = useState('CASH');
+  const [payAmount, setPayAmount] = useState('');
 
   useEffect(() => {
     Promise.all([api.get('/billing/sessions/active'), menuApi.list({ isActive: true })])
@@ -29,17 +33,59 @@ export default function CashierOrdersPage() {
   };
   const removeFromCart = (id: string) => setCart(c => c.filter(i => i.menuItemId !== id));
   const total = cart.reduce((s,i) => s+i.price*i.qty, 0);
+  const standaloneChange = Math.max(0, Number(payAmount || 0) - total);
+
+  const resetPaymentPopup = useCallback(() => {
+    setShowPaymentPopup(false);
+    setStandaloneOrderId('');
+    setPayMethod('CASH');
+    setPayAmount('');
+  }, []);
 
   const handleSubmit = async () => {
-    if (!selSession) { toast.error('Pilih sesi meja'); return; }
     if (cart.length === 0) { toast.error('Tambahkan item ke pesanan'); return; }
     setBusy(true);
     try {
       const session = sessions.find(s => s.id === selSession);
-      await ordersApi.create({ billingSessionId: selSession, tableId: session?.tableId, items: cart.map(i => ({ menuItemId: i.menuItemId, quantity: i.qty, unitPrice: i.price, subtotal: i.price * i.qty, taxAmount: 0 })) });
-      toast.success('Pesanan dibuat'); setCart([]);
+      const order = await ordersApi.create({
+        billingSessionId: selSession || undefined,
+        tableId: selSession ? session?.tableId : undefined,
+        items: cart.map(i => ({ menuItemId: i.menuItemId, quantity: i.qty })),
+      });
+
+      if (selSession) {
+        toast.success('Pesanan meja dibuat');
+        setCart([]);
+      } else {
+        setStandaloneOrderId(order.id);
+        setShowPaymentPopup(true);
+      }
     } catch (e: any) { toast.error(e?.response?.data?.message || 'Gagal'); }
     finally { setBusy(false); }
+  };
+
+  const handleStandalonePayment = async () => {
+    if (!standaloneOrderId) return;
+    if (payMethod === 'CASH' && Number(payAmount) < total) {
+      toast.error('Jumlah bayar kurang');
+      return;
+    }
+
+    setBusy(true);
+    try {
+      await paymentsApi.createCheckout({
+        orderIds: [standaloneOrderId],
+        method: payMethod,
+        amountPaid: payMethod === 'CASH' ? Number(payAmount) : total,
+      });
+      toast.success(`Pembayaran berhasil! Kembalian: ${formatRupiah(standaloneChange)}`);
+      setCart([]);
+      resetPaymentPopup();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Gagal memproses pembayaran');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -47,9 +93,9 @@ export default function CashierOrdersPage() {
       <div className="page-header"><div><h1 className="page-title">Order F&B</h1></div></div>
       <div className="grid-2">
         <div>
-          <div className="form-group mb-4"><label className="form-label">Pilih Sesi Meja</label>
+          <div className="form-group mb-4"><label className="form-label">Pilih Sesi Meja (opsional)</label>
             <select className="form-select" value={selSession} onChange={e => setSelSession(e.target.value)}>
-              <option value="">-- Pilih meja aktif --</option>
+              <option value="">-- Standalone (langsung bayar) --</option>
               {sessions.map(s => <option key={s.id} value={s.id}>{s.table?.name} — {s.member?.name||s.guestName||'Tamu'}</option>)}
             </select>
           </div>
@@ -80,12 +126,47 @@ export default function CashierOrdersPage() {
                 <span>Total</span><span>{formatRupiah(total)}</span>
               </div>
               <button className="btn btn-success" style={{ width:'100%',justifyContent:'center' }} onClick={handleSubmit} disabled={busy}>
-                {busy?'Memproses...':<><Check size={15}/> Buat Pesanan</>}
+                {busy?'Memproses...':<><Check size={15}/> {selSession ? 'Buat Pesanan Meja' : 'Konfirmasi & Bayar'}</>}
               </button>
             </>}
           </div>
         </div>
       </div>
+
+      {showPaymentPopup && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div className="card card-padded" style={{ width: '100%', maxWidth: 460 }}>
+            <h3 className="card-title mb-4">Checkout F&B Standalone</h3>
+            <div style={{ marginBottom: 14, display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>
+              <span>Total Bayar</span>
+              <span>{formatRupiah(total)}</span>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Metode Pembayaran</label>
+              <div style={{ display:'flex',gap:8 }}>
+                {['CASH','QRIS','TRANSFER'].map(m => (
+                  <button key={m} className={`btn btn-sm ${payMethod===m?'btn-dark':'btn-outline'}`} style={{ flex:1 }} onClick={() => setPayMethod(m)}>{m}</button>
+                ))}
+              </div>
+            </div>
+            {payMethod === 'CASH' && (
+              <div className="form-group">
+                <label className="form-label">Jumlah Bayar</label>
+                <input className="form-input" type="number" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} placeholder="0" />
+                {Number(payAmount) > 0 && (
+                  <div style={{ marginTop: 8, fontSize: 13, fontWeight: 600 }}>
+                    {Number(payAmount) >= total ? `Kembalian: ${formatRupiah(standaloneChange)}` : `Kurang: ${formatRupiah(total - Number(payAmount))}`}
+                  </div>
+                )}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              <button className="btn btn-outline" style={{ flex: 1 }} onClick={resetPaymentPopup} disabled={busy}>Batal</button>
+              <button className="btn btn-success" style={{ flex: 1 }} onClick={handleStandalonePayment} disabled={busy}>{busy ? 'Memproses...' : 'Bayar Sekarang'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

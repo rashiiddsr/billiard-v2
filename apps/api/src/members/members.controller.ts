@@ -44,7 +44,7 @@ export class MembersController {
   }
 
   @Post()
-  @Roles('OWNER' as any, 'MANAGER' as any)
+  @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any)
   createMember(@Body() dto: CreateMemberDto, @CurrentUser() user: any) {
     return this.membersService.createMember(dto, user.id);
   }

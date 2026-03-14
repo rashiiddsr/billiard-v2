@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { membersApi } from '@/lib/api';
-import { Search, User, Phone, Hash } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { Search, User, Phone, Hash, Plus } from 'lucide-react';
 
 interface Member {
   id: string;
@@ -18,6 +19,10 @@ export default function CashierMembersPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
+  const [showCreate, setShowCreate] = useState(false);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -34,6 +39,29 @@ export default function CashierMembersPage() {
     return () => clearTimeout(t);
   }, [load]);
 
+  const openCreate = () => {
+    setShowCreate(true);
+    setName('');
+    setPhone('');
+  };
+
+  const handleCreate = async () => {
+    if (!name.trim()) { toast.error('Nama wajib diisi'); return; }
+    if (!phone.trim()) { toast.error('No HP wajib diisi'); return; }
+
+    setSaving(true);
+    try {
+      await membersApi.create({ name: name.trim(), phoneNumber: phone.trim() });
+      toast.success('Member berhasil ditambahkan');
+      setShowCreate(false);
+      load();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Gagal menambah member');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div>
       <div className="page-header">
@@ -41,6 +69,7 @@ export default function CashierMembersPage() {
           <h1 className="page-title">Daftar Member</h1>
           <p className="page-subtitle">Cari member untuk billing atau antrian</p>
         </div>
+        <button className="btn btn-primary" onClick={openCreate}><Plus size={16} /> Tambah Member</button>
       </div>
 
       <div className="card card-padded mb-4">
@@ -100,6 +129,26 @@ export default function CashierMembersPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {showCreate && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 16 }}>
+          <div className="card card-padded" style={{ width: '100%', maxWidth: 460 }}>
+            <h3 className="card-title mb-4">Tambah Member Baru</h3>
+            <div className="form-group">
+              <label className="form-label">Nama</label>
+              <input className="form-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nama member" autoFocus />
+            </div>
+            <div className="form-group">
+              <label className="form-label">No. HP</label>
+              <input className="form-input" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="08xxxxxxxxxx" />
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+              <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => setShowCreate(false)} disabled={saving}>Batal</button>
+              <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleCreate} disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan Member'}</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
