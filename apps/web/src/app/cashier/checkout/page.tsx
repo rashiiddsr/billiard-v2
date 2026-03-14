@@ -14,7 +14,14 @@ export default function CashierCheckoutPage() {
   const [loading, setLoading] = useState(false); const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    billingApi.getSessions({ status: 'COMPLETED', limit: 20 }).then(r => { setSessions(r.data.filter((s:any) => s.payments.length===0)); }).catch(()=>{});
+    billingApi.getSessions({ status: 'COMPLETED', limit: 20 })
+      .then((r) => {
+        const completed = Array.isArray(r?.data) ? r.data : [];
+        setSessions(completed.filter((s: any) => s.payments.length === 0));
+      })
+      .catch(() => {
+        setSessions([]);
+      });
   }, []);
 
   const loadSession = async (id: string) => {
@@ -39,7 +46,14 @@ export default function CashierCheckoutPage() {
       await paymentsApi.confirmPayment(payment.id, method==='CASH'?Number(amountPaid):totalAmount);
       toast.success(`Pembayaran berhasil! Kembalian: ${formatRupiah(change)}`);
       setSession(null); setSelId(''); setAmountPaid('');
-      billingApi.getSessions({ status: 'COMPLETED', limit: 20 }).then(r => setSessions(r.data.filter((s:any)=>s.payments.length===0))).catch(()=>{});
+      billingApi.getSessions({ status: 'COMPLETED', limit: 20 })
+        .then((r) => {
+          const completed = Array.isArray(r?.data) ? r.data : [];
+          setSessions(completed.filter((s: any) => s.payments.length === 0));
+        })
+        .catch(() => {
+          setSessions([]);
+        });
     } catch (e: any) { toast.error(e?.response?.data?.message || 'Gagal'); }
     finally { setBusy(false); }
   };
