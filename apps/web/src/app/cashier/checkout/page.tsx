@@ -42,8 +42,11 @@ export default function CashierCheckoutPage() {
     if (method === 'CASH' && Number(amountPaid) < totalAmount) { toast.error('Jumlah bayar kurang'); return; }
     setBusy(true);
     try {
-      const payment = await paymentsApi.createCheckout({ billingSessionId: session.id, method, billingAmount: totalAmount, fnbAmount: 0, subtotal: totalAmount, totalAmount, amountPaid: method==='CASH'?Number(amountPaid):totalAmount });
-      await paymentsApi.confirmPayment(payment.id, method==='CASH'?Number(amountPaid):totalAmount);
+      await paymentsApi.createCheckout({
+        billingSessionId: session.id,
+        method,
+        amountPaid: method === 'CASH' ? Number(amountPaid) : totalAmount,
+      });
       toast.success(`Pembayaran berhasil! Kembalian: ${formatRupiah(change)}`);
       setSession(null); setSelId(''); setAmountPaid('');
       billingApi.getSessions({ status: 'COMPLETED', limit: 20 })
