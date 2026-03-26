@@ -2,20 +2,22 @@
 import { useState, useEffect, useCallback } from 'react';
 import { auditApi } from '@/lib/api';
 import { Filter } from 'lucide-react';
-import { formatDateTime } from '@/lib/utils';
+import { asArray, formatDateTime } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
 export default function AuditPage() {
   const [logs, setLogs] = useState<any[]>([]); const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1); const [total, setTotal] = useState(0);
   const [filterEntity, setFilterEntity] = useState(''); const [filterAction, setFilterAction] = useState('');
+  const actions = ['', 'LOGIN', 'LOGOUT', 'FAILED_AUTH', 'START_BILLING', 'STOP_BILLING', 'PAYMENT', 'CREATE', 'UPDATE', 'DELETE'];
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const res = await auditApi.list({ page, limit: 50, entity: filterEntity||undefined, action: filterAction||undefined });
-      setLogs(Array.isArray(res) ? res : (res?.data || []));
-      setTotal(Array.isArray(res) ? res.length : (res?.total || 0));
+      const rows = asArray(res);
+      setLogs(rows);
+      setTotal(Number(res?.total || res?.meta?.total || rows.length));
     } catch (e: any) {
       toast.error(e?.response?.data?.message || 'Gagal memuat audit log');
       setLogs([]);
@@ -32,12 +34,15 @@ export default function AuditPage() {
       <div className="card card-padded mb-4" style={{ display:'flex',gap:12,flexWrap:'wrap',alignItems:'center' }}>
         <Filter size={14} style={{ color:'var(--color-text-muted)' }}/>
         <input className="form-input" placeholder="Entity (contoh: BillingSession)" value={filterEntity} onChange={e=>{setFilterEntity(e.target.value);setPage(1);}} style={{ width:'auto',minWidth:200 }}/>
-        <input className="form-input" placeholder="Action (contoh: LOGIN)" value={filterAction} onChange={e=>{setFilterAction(e.target.value);setPage(1);}} style={{ width:'auto',minWidth:160 }}/>
+        <select className="form-select" value={filterAction} onChange={e=>{setFilterAction(e.target.value);setPage(1);}} style={{ width:'auto',minWidth:220 }}>
+          {actions.map((a)=> <option key={a || 'ALL'} value={a}>{a || 'Semua Action'}</option>)}
+        </select>
       </div>
       <div className="card"><div className="table-wrapper"><table className="data-table">
         <thead><tr><th>Waktu</th><th>User</th><th>Aksi</th><th>Entity</th><th>ID Entity</th></tr></thead>
         <tbody>
           {loading ? <tr><td colSpan={5} style={{ textAlign:'center',padding:32 }}>Memuat...</td></tr>
+          : logs.length === 0 ? <tr><td colSpan={5} style={{ textAlign:'center',padding:32,color:'var(--color-text-muted)' }}>Belum ada audit log untuk filter ini.</td></tr>
           : logs.map((l:any)=>(
             <tr key={l.id}>
               <td style={{ fontSize:11,fontFamily:'monospace' }}>{formatDateTime(l.createdAt)}</td>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { tablesApi } from '@/lib/api';
+import { asArray } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Plus, Edit2, Trash2, X, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 
@@ -38,7 +39,7 @@ export default function DeveloperTablesPage() {
     setLoading(true);
     try {
       const res = await tablesApi.list(true);
-      setTables(res);
+      setTables(asArray(res));
     } finally {
       setLoading(false);
     }

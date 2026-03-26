@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { packagesApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Plus, Edit2, Trash2, X } from 'lucide-react';
-import { formatRupiah } from '@/lib/utils';
+import { asArray, formatRupiah } from '@/lib/utils';
 
 export default function PackagesPage() {
   const [pkgs, setPkgs] = useState<any[]>([]);
@@ -13,7 +13,7 @@ export default function PackagesPage() {
   const [form, setForm] = useState({ name: '', price: '', durationMinutes: '60', targetHourlyRate: '', isActive: true });
   const [busy, setBusy] = useState(false);
 
-  const load = async () => { setLoading(true); try { setPkgs(await packagesApi.list()); } finally { setLoading(false); } };
+  const load = async () => { setLoading(true); try { setPkgs(asArray(await packagesApi.list())); } finally { setLoading(false); } };
   useEffect(() => { load(); }, []);
 
   const openCreate = () => { setEditId(null); setForm({ name: '', price: '', durationMinutes: '60', targetHourlyRate: '', isActive: true }); setShowModal(true); };
