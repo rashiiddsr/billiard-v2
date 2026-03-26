@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { membersApi } from '@/lib/api';
+import { asArray } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Search, User, Phone, Hash, Plus } from 'lucide-react';
 
@@ -28,7 +29,7 @@ export default function CashierMembersPage() {
     setLoading(true);
     try {
       const res = await membersApi.list({ search: search || undefined, limit: 30 });
-      setMembers(res.data);
+      setMembers(asArray(res));
     } finally {
       setLoading(false);
     }

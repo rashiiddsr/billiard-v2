@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { financeApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Plus, Edit2, Trash2, X, Filter } from 'lucide-react';
-import { formatRupiah, formatDate } from '@/lib/utils';
+import { asArray, formatRupiah, formatDate } from '@/lib/utils';
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<any[]>([]);
@@ -22,7 +22,7 @@ export default function ExpensesPage() {
       const params: any = {};
       if (filterDate) { params.startDate = filterDate; params.endDate = filterDate + 'T23:59:59'; }
       const res = await financeApi.listExpenses(params);
-      setExpenses(res.data || res);
+      setExpenses(asArray(res));
     } finally { setLoading(false); }
   }, [filterDate]);
 

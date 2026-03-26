@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { menuApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Plus, Edit2, Trash2, X, Search } from 'lucide-react';
-import { formatRupiah } from '@/lib/utils';
+import { asArray, formatRupiah } from '@/lib/utils';
 
 interface MenuItem { id: string; sku: string; name: string; category: string; price: string; cost?: string; isActive: boolean; }
 interface Category { id: string; name: string; skuPrefix: string; }
@@ -25,9 +25,8 @@ export default function MenuPage({ canEdit = true }: Props) {
     setLoading(true);
     try {
       const [mRes, cRes] = await Promise.all([menuApi.list({ search: search || undefined, category: catFilter || undefined }), menuApi.categories()]);
-      const nextItems = Array.isArray(mRes) ? mRes : (mRes?.data || []);
-      setItems(nextItems);
-      setCats(cRes);
+      setItems(asArray(mRes));
+      setCats(asArray(cRes));
     } finally { setLoading(false); }
   }, [search, catFilter]);
   useEffect(() => { load(); }, [load]);

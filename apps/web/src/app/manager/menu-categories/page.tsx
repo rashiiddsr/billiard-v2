@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { menuApi } from '@/lib/api';
+import { asArray } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Plus, Edit2, Trash2, X } from 'lucide-react';
 
@@ -13,7 +14,7 @@ export default function Page() {
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState(''); const [prefix, setPrefix] = useState(''); const [busy, setBusy] = useState(false);
 
-  const load = async () => { setLoading(true); try { setCats(await menuApi.categories()); } finally { setLoading(false); } };
+  const load = async () => { setLoading(true); try { setCats(asArray(await menuApi.categories())); } finally { setLoading(false); } };
   useEffect(() => { load(); }, []);
 
   const openCreate = () => { setEditId(null); setName(''); setPrefix(''); setShowModal(true); };

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { billingApi } from '@/lib/api';
-import { formatRupiah, formatDateTime, formatDuration } from '@/lib/utils';
+import { asArray, formatRupiah, formatDateTime, formatDuration } from '@/lib/utils';
 import { Filter, RefreshCw } from 'lucide-react';
 
 interface Session { id: string; startTime: string; actualEndTime: string | null; durationMinutes: number; totalAmount: string; rateType: string; status: string; guestName?: string; member?: { name: string; memberNumber: string }; table: { name: string }; payments: any[]; createdBy: { name: string }; }
@@ -23,7 +23,7 @@ export default function SessionsListPage({ title, subtitle }: Props) {
       if (startDate) params.startDate = startDate;
       if (endDate) params.endDate = endDate + 'T23:59:59';
       const res = await billingApi.getSessions(params);
-      setSessions(res.data); setTotal(res.total);
+      setSessions(asArray(res)); setTotal(Number(res?.total || res?.meta?.total || 0));
     } catch {} finally { setLoading(false); }
   }, [page, filterStatus, startDate, endDate]);
 
