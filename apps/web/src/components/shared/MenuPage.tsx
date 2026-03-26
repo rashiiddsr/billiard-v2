@@ -73,6 +73,7 @@ export default function MenuPage({ canEdit = true }: Props) {
             <thead><tr><th>SKU</th><th>Nama</th><th>Kategori</th><th>Harga Jual</th><th>HPP</th><th>Status</th>{canEdit && <th>Aksi</th>}</tr></thead>
             <tbody>
               {loading ? <tr><td colSpan={7} style={{ textAlign: 'center', padding: 32 }}>Memuat...</td></tr>
+              : items.length === 0 ? <tr><td colSpan={canEdit ? 7 : 6} className="table-empty-cell">Belum ada data untuk ditampilkan</td></tr>
               : items.map(m => (
                 <tr key={m.id}>
                   <td><code style={{ fontSize: 11 }}>{m.sku}</code></td>

@@ -44,6 +44,7 @@ export default function PackagesPage() {
         <thead><tr><th>Nama</th><th>Harga</th><th>Durasi</th><th>Tarif Target</th><th>Status</th><th>Aksi</th></tr></thead>
         <tbody>
           {loading ? <tr><td colSpan={6} style={{ textAlign: 'center', padding: 32 }}>Memuat...</td></tr>
+          : pkgs.length === 0 ? <tr><td colSpan={6} className="table-empty-cell">Belum ada data untuk ditampilkan</td></tr>
           : pkgs.map(p => (
             <tr key={p.id}>
               <td style={{ fontWeight: 600 }}>{p.name}</td>
