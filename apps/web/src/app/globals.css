@@ -439,6 +439,16 @@ table.data-table tbody tr {
 }
 table.data-table tbody tr:hover { background: var(--color-gold-pale); }
 
+table.data-table tbody:empty::before {
+  content: 'Belum ada data untuk ditampilkan';
+  display: block;
+  padding: 28px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
 /* ─── Badges / Pills ─────────────────────────────────────────────────────────── */
 .badge {
   display: inline-flex;
