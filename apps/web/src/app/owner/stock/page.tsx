@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { stockApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { AlertTriangle, Plus, Minus } from 'lucide-react';
+import { asArray } from '@/lib/utils';
 
 export default function StockPage() {
   const [stocks, setStocks] = useState<any[]>([]);
@@ -10,7 +11,7 @@ export default function StockPage() {
   const [editId, setEditId] = useState<string|null>(null);
   const [delta, setDelta] = useState(''); const [notes, setNotes] = useState(''); const [actionType, setActionType] = useState('RESTOCK');
 
-  const load = async () => { setLoading(true); try { setStocks(await stockApi.getFnbStock()); } finally { setLoading(false); } };
+  const load = async () => { setLoading(true); try { setStocks(asArray(await stockApi.getFnbStock())); } finally { setLoading(false); } };
   useEffect(() => { load(); }, []);
 
   const handleAdjust = async (menuItemId: string) => {
