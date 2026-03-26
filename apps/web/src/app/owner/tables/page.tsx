@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { tablesApi } from '@/lib/api';
+import { asArray } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Plus, Edit2, X, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import { formatRupiah } from '@/lib/utils';
@@ -15,7 +16,7 @@ export default function OwnerTablesPage() {
   const [rate, setRate] = useState(''); const [active, setActive] = useState(true);
   const [busy, setBusy] = useState(false);
 
-  const load = useCallback(async () => { setLoading(true); try { setTables(await tablesApi.list(true)); } finally { setLoading(false); } }, []);
+  const load = useCallback(async () => { setLoading(true); try { setTables(asArray(await tablesApi.list(true))); } finally { setLoading(false); } }, []);
   useEffect(() => { load(); }, [load]);
 
   const openEdit = (t: Table) => { setEditId(t.id); setRate(t.hourlyRate); setActive(t.isActive); setShowModal(true); };

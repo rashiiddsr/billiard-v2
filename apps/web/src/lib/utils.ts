@@ -17,3 +17,11 @@ export function formatDuration(minutes: number): string {
   if (m === 0) return `${h} jam`;
   return `${h}j ${m}m`;
 }
+
+export function asArray<T = any>(value: any): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (value && Array.isArray(value.data)) return value.data as T[];
+  if (value && Array.isArray(value.items)) return value.items as T[];
+  if (value?.data && Array.isArray(value.data.items)) return value.data.items as T[];
+  return [];
+}

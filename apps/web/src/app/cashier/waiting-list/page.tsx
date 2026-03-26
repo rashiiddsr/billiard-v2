@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { membersApi } from '@/lib/api';
+import { asArray } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import {
   Plus, Clock, PhoneCall, CheckCheck, X, Search,
@@ -62,7 +63,7 @@ export default function WaitingListPage() {
   const loadEntries = useCallback(async () => {
     try {
       const res = await api.get('/waiting-list');
-      setEntries(res.data);
+      setEntries(asArray(res));
     } catch {
       toast.error('Gagal memuat waiting list');
     } finally {
@@ -72,7 +73,7 @@ export default function WaitingListPage() {
 
   useEffect(() => {
     loadEntries();
-    api.get('/tables').then((r) => setTables(r.data)).catch(() => {});
+    api.get('/tables').then((r) => setTables(asArray(r.data))).catch(() => {});
     const interval = setInterval(loadEntries, 15000); // refresh tiap 15 detik
     return () => clearInterval(interval);
   }, [loadEntries]);
@@ -81,7 +82,7 @@ export default function WaitingListPage() {
     if (q.length < 2) { setMemberResults([]); return; }
     try {
       const res = await api.get('/members/search', { params: { q } });
-      setMemberResults(res.data);
+      setMemberResults(asArray(res));
     } catch {}
   };
 

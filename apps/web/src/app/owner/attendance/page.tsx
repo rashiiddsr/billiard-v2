@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
+import { asArray } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import {
   CalendarCheck, Clock, MapPin, Settings, Plus, Edit2, Trash2,
@@ -87,7 +88,7 @@ export default function AttendancePage() {
 
   const loadShifts = useCallback(async () => {
     const res = await api.get('/attendance/shifts', { params: { includeInactive: 'true' } });
-    setShifts(res.data);
+    setShifts(asArray(res.data));
   }, []);
 
   const loadSetting = useCallback(async () => {

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { usersApi } from '@/lib/api';
+import { asArray } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Plus, Edit2, X } from 'lucide-react';
 
@@ -14,7 +15,7 @@ export default function UsersPage() {
   const [form, setForm] = useState({ name: '', email: '', phoneNumber: '', role: 'CASHIER', password: '', isActive: true });
   const [busy, setBusy] = useState(false);
 
-  const load = async () => { setLoading(true); try { setUsers(await usersApi.list()); } finally { setLoading(false); } };
+  const load = async () => { setLoading(true); try { setUsers(asArray(await usersApi.list())); } finally { setLoading(false); } };
   useEffect(() => { load(); }, []);
 
   const openCreate = () => { setEditId(null); setForm({ name:'',email:'',phoneNumber:'',role:'CASHIER',password:'',isActive:true }); setShowModal(true); };
