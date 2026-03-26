@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import {
   LayoutDashboard, Users, ClipboardList, CreditCard, Package,
-  UtensilsCrossed, BarChart3, Wallet, Archive, LogOut, User,
+  UtensilsCrossed, BarChart3, Wallet, Archive, User,
   Building2, ScrollText, Timer, ListOrdered, UserCheck,
   CalendarCheck, Clock, ChevronRight
 } from 'lucide-react';
@@ -122,32 +122,21 @@ const navConfig: Record<string, NavGroup[]> = {
   ],
 };
 
-const roleLabels: Record<string, string> = {
-  OWNER: 'Owner',
-  DEVELOPER: 'Developer',
-  MANAGER: 'Manager',
-  CASHIER: 'Kasir',
-  MEMBER: 'Member',
-};
-
 export default function Sidebar() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const pathname = usePathname();
 
   if (!user) return null;
 
   const groups = navConfig[user.role] || [];
-  const initials = user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
 
   return (
     <aside className="layout-sidebar">
-      {/* Logo */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-title">🎱 Billiard POS</div>
         <div className="sidebar-logo-sub">Premium Management System</div>
       </div>
 
-      {/* Nav Groups */}
       <nav style={{ padding: '8px 0', flex: 1 }}>
         {groups.map((group) => (
           <div className="sidebar-section" key={group.label}>
@@ -170,7 +159,6 @@ export default function Sidebar() {
           </div>
         ))}
 
-        {/* Attendance shortcut for staff */}
         {['CASHIER', 'MANAGER', 'OWNER', 'DEVELOPER'].includes(user.role) && (
           <div className="sidebar-section">
             <div className="sidebar-section-label">Absensi</div>
@@ -185,26 +173,7 @@ export default function Sidebar() {
         )}
       </nav>
 
-      {/* User Footer */}
       <div className="sidebar-footer">
-        <div className="sidebar-user">
-          {user.profileImageUrl ? (
-            <img
-              src={user.profileImageUrl}
-              alt={user.name}
-              style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover' }}
-            />
-          ) : (
-            <div className="sidebar-user-avatar">{initials}</div>
-          )}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="sidebar-user-name" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {user.name}
-            </div>
-            <div className="sidebar-user-role">{roleLabels[user.role] || user.role}</div>
-          </div>
-        </div>
-
         <Link
           href={`/${user.role.toLowerCase()}/profile`}
           className="sidebar-item"
@@ -213,15 +182,6 @@ export default function Sidebar() {
           <User size={16} />
           <span>Profil Saya</span>
         </Link>
-
-        <button
-          onClick={logout}
-          className="sidebar-item"
-          style={{ marginTop: 2, color: '#F87171', width: '100%' }}
-        >
-          <LogOut size={16} />
-          <span>Keluar</span>
-        </button>
       </div>
     </aside>
   );
