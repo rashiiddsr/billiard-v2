@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Users, ClipboardList, CreditCard, Package,
   UtensilsCrossed, BarChart3, Wallet, Archive, User,
   Building2, ScrollText, Timer, ListOrdered, UserCheck,
-  CalendarCheck, Clock, ChevronRight, MonitorSmartphone
+  CalendarCheck, Clock, ChevronRight
 } from 'lucide-react';
 
 interface NavItem {
@@ -53,7 +53,6 @@ const navConfig: Record<string, NavGroup[]> = {
         { label: 'Shift Kerja', href: '/owner/shifts', icon: Clock },
         { label: 'Audit Log', href: '/owner/audit', icon: ScrollText },
         { label: 'Perusahaan', href: '/owner/company', icon: Building2 },
-        { label: 'Display TV', href: '/owner/waiting-display', icon: MonitorSmartphone },
       ],
     },
   ],
