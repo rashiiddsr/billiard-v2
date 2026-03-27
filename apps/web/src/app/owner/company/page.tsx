@@ -4,6 +4,14 @@ import { companyApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Building2, ImagePlus } from 'lucide-react';
 
+const DEFAULT_LOGO = '/default-brand.svg';
+
+function resolveLogo(url?: string | null) {
+  const cleaned = url?.trim();
+  if (!cleaned || cleaned === 'null' || cleaned === 'undefined') return DEFAULT_LOGO;
+  return cleaned;
+}
+
 export default function CompanyPage() {
   const [form, setForm] = useState({ name: '', address: '', phoneNumber: '' });
   const [loading, setLoading] = useState(true);
@@ -94,7 +102,17 @@ export default function CompanyPage() {
                   if (file) setLogoPreview(URL.createObjectURL(file));
                 }} />
                 <small style={{ color: 'var(--color-text-muted)' }}>Rekomendasi: PNG/JPG rasio 1:1, ideal 512x512 (minimal 256x256). Logo dipakai untuk sidebar, waiting list TV, dan favicon aplikasi.</small>
-                {logoPreview && <div style={{ marginTop: 10 }}><img src={logoPreview} alt="Preview logo" style={{ width: 64, height: 64, borderRadius: 8, objectFit: 'cover', border: '1px solid var(--color-border)' }} /></div>}
+                <div style={{ marginTop: 10 }}>
+                  <img
+                    src={resolveLogo(logoPreview)}
+                    alt="Preview logo"
+                    style={{ width: 64, height: 64, borderRadius: 8, objectFit: 'cover', border: '1px solid var(--color-border)' }}
+                    onError={(event) => {
+                      if (event.currentTarget.src.endsWith(DEFAULT_LOGO)) return;
+                      event.currentTarget.src = DEFAULT_LOGO;
+                    }}
+                  />
+                </div>
               </div>
 
               <div style={{ display: 'flex', gap: 10 }}>
