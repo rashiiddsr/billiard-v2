@@ -20,7 +20,7 @@ import {
   Line,
   LineChart,
 } from 'recharts';
-import { ArrowDownCircle, ArrowUpCircle, Clock3, CreditCard, PiggyBank, Receipt, TrendingUp, WalletCards } from 'lucide-react';
+import { ArrowDownCircle, ArrowUpCircle, CreditCard, PiggyBank, Receipt, Timer, TrendingUp, WalletCards } from 'lucide-react';
 
 type Period = '7d' | '30d';
 const COLORS = ['#f59e0b', '#22c55e', '#3b82f6', '#a855f7', '#f43f5e'];
@@ -77,8 +77,7 @@ export default function OwnerReportsTransactionsPage() {
     const totalBilling = filtered.trx.reduce((n, p) => n + Number(p.billingAmount || 0), 0);
     const totalFnb = filtered.trx.reduce((n, p) => n + Number(p.fnbAmount || 0), 0);
     const totalDiscount = filtered.trx.reduce((n, p) => n + Number(p.discountAmount || 0), 0);
-    const totalTax = filtered.trx.reduce((n, p) => n + Number(p.taxAmount || 0), 0);
-    const avgTicket = filtered.trx.length ? totalRevenue / filtered.trx.length : 0;
+    const totalDurationMinutes = filtered.trx.reduce((n, p) => n + Number(p.billingSession?.durationMinutes || 0), 0);
     const avgPerDay = totalRevenue / (period === '7d' ? 7 : 30);
 
     return {
@@ -86,12 +85,11 @@ export default function OwnerReportsTransactionsPage() {
       totalExpenses,
       net: totalRevenue - totalExpenses,
       trxCount: filtered.trx.length,
-      avgTicket,
       avgPerDay,
       totalBilling,
       totalFnb,
       totalDiscount,
-      totalTax,
+      totalDurationMinutes,
     };
   }, [filtered, period]);
 
@@ -114,23 +112,33 @@ export default function OwnerReportsTransactionsPage() {
     const daily = Object.values(byDateMap).sort((a, b) => a.date.localeCompare(b.date));
 
     const methodsMap: Record<string, number> = {};
-    const cashiersMap: Record<string, number> = {};
+    const tablePerformanceMap: Record<string, { name: string; total: number; durationMinutes: number; sessions: number }> = {};
     for (const p of filtered.trx) {
       methodsMap[p.method || 'LAINNYA'] = (methodsMap[p.method || 'LAINNYA'] || 0) + Number(p.totalAmount || 0);
-      const cashier = p?.paidBy?.name || 'Tanpa Nama';
-      cashiersMap[cashier] = (cashiersMap[cashier] || 0) + Number(p.totalAmount || 0);
+
+      const tableId = p?.billingSession?.table?.id || p?.billingSession?.tableId;
+      if (tableId) {
+        const tableName = p?.billingSession?.table?.name || 'Tanpa Nama Meja';
+        const revenue = Number(p.billingAmount || 0);
+        const durationMinutes = Number(p?.billingSession?.durationMinutes || 0);
+        if (!tablePerformanceMap[tableId]) {
+          tablePerformanceMap[tableId] = { name: tableName, total: 0, durationMinutes: 0, sessions: 0 };
+        }
+        tablePerformanceMap[tableId].total += revenue;
+        tablePerformanceMap[tableId].durationMinutes += durationMinutes;
+        tablePerformanceMap[tableId].sessions += 1;
+      }
     }
 
     const methods = Object.entries(methodsMap).map(([method, total]) => ({ method, total }));
-    const topCashiers = Object.entries(cashiersMap)
-      .map(([name, total]) => ({ name, total }))
-      .sort((a, b) => b.total - a.total)
+    const topTables = Object.values(tablePerformanceMap)
+      .sort((a, b) => (b.total - a.total) || (b.durationMinutes - a.durationMinutes))
       .slice(0, 5);
 
     return {
       daily,
       methods,
-      topCashiers,
+      topTables,
       splitRevenue: [
         { name: 'Billing', value: kpi.totalBilling },
         { name: 'F&B', value: kpi.totalFnb },
@@ -143,10 +151,10 @@ export default function OwnerReportsTransactionsPage() {
     { label: 'Pengeluaran', value: formatRupiah(kpi.totalExpenses), icon: ArrowDownCircle, color: 'var(--color-danger)' },
     { label: 'Laba Bersih', value: formatRupiah(kpi.net), icon: PiggyBank, color: kpi.net >= 0 ? 'var(--color-success)' : 'var(--color-danger)' },
     { label: 'Total Transaksi', value: String(kpi.trxCount), icon: Receipt, color: 'var(--color-primary)' },
-    { label: 'Rata-rata Ticket', value: formatRupiah(kpi.avgTicket), icon: WalletCards, color: 'var(--color-gold)' },
+    { label: 'Pendapatan Billing', value: formatRupiah(kpi.totalBilling), icon: WalletCards, color: 'var(--color-gold)' },
     { label: 'Rata-rata Omset/Hari', value: formatRupiah(kpi.avgPerDay), icon: TrendingUp, color: 'var(--color-info)' },
     { label: 'Total Diskon', value: formatRupiah(kpi.totalDiscount), icon: CreditCard, color: 'var(--color-warning)' },
-    { label: 'Total Pajak', value: formatRupiah(kpi.totalTax), icon: Clock3, color: 'var(--color-text)' },
+    { label: 'Total Jam Main', value: `${Math.round(kpi.totalDurationMinutes / 60)} jam`, icon: Timer, color: 'var(--color-text)' },
   ];
 
   return (
@@ -238,15 +246,21 @@ export default function OwnerReportsTransactionsPage() {
       </div>
 
       <div className="card mb-6">
-        <div className="card-header"><h3 className="card-title">Top Kasir Berdasarkan Omset</h3></div>
+        <div className="card-header"><h3 className="card-title">Top Meja Berdasarkan Omset Billing</h3></div>
         <div className="card-body" style={{ height: 280 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={charts.topCashiers}>
+            <BarChart data={charts.topTables}>
               <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" />
               <XAxis dataKey="name" />
               <YAxis tickFormatter={(v) => `${Math.round(v / 1000)}k`} />
-              <Tooltip formatter={(v: any) => formatRupiah(v)} />
+              <Tooltip
+                formatter={(value: any, _name, payload: any) => {
+                  if (payload?.dataKey === 'durationMinutes') return `${Math.round(Number(value) / 60)} jam`;
+                  return formatRupiah(value);
+                }}
+              />
               <Bar dataKey="total" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="durationMinutes" fill="#0ea5e9" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
