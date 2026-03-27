@@ -3,15 +3,6 @@ import Cookies from 'js-cookie';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
-const PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
-
-async function getPublic<T>(path: string): Promise<T> {
-  const res = await fetch(`${PUBLIC_API_URL}${path}`, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`Public API error: ${res.status}`);
-  return res.json();
-}
-
-
 export const api = axios.create({
   baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },
@@ -174,7 +165,6 @@ export const waitingListApi = {
   done:   (id: string) => api.patch(`/waiting-list/${id}/done`).then((r) => r.data),
   cancel: (id: string) => api.patch(`/waiting-list/${id}/cancel`).then((r) => r.data),
   remove: (id: string) => api.delete(`/waiting-list/${id}`).then((r) => r.data),
-  publicDisplay: () => getPublic<any[]>('/waiting-list/public/display'),
 };
 
 // ─── Attendance (baru v2) ─────────────────────────────────────────────────────
@@ -315,7 +305,6 @@ export const companyApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then((r) => r.data),
   resetLogo:     () => api.patch('/company/profile/logo/reset').then((r) => r.data),
-  getPublicProfile: () => getPublic<any>('/company/profile'),
 };
 
 // ─── Notifications ────────────────────────────────────────────────────────────
