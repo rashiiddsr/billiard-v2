@@ -40,6 +40,7 @@ interface Member {
 interface Package {
   id: string; name: string; price: string;
   durationMinutes: number; targetHourlyRate: string;
+  items?: Array<{ id: string; type: 'BILLING' | 'MENU_ITEM'; quantity: number; menuItem?: { name: string } | null }>;
 }
 
 type ModalType = 'start' | 'extend' | 'stop' | 'move' | null;
@@ -57,7 +58,7 @@ export default function BillingPage() {
   const [memberQ, setMemberQ]             = useState('');
   const [memberResults, setMemberResults] = useState<Member[]>([]);
   const [selMember, setSelMember]         = useState<Member | null>(null);
-  const [rateType, setRateType]           = useState<'HOURLY'|'FLEXIBLE'>('HOURLY');
+  const [rateType, setRateType]           = useState<'HOURLY'|'FLEXIBLE'|'PACKAGE'>('HOURLY');
   const [duration, setDuration]           = useState(60);
   const [selPkg, setSelPkg]               = useState<Package | null>(null);
 
@@ -120,6 +121,7 @@ export default function BillingPage() {
     if (!sel) return;
     if (guestType === 'guest' && !guestName.trim()) { toast.error('Isi nama tamu'); return; }
     if (guestType === 'member' && !selMember)       { toast.error('Pilih member'); return; }
+    if (rateType === 'PACKAGE' && !selPkg)          { toast.error('Pilih paket billing'); return; }
     setBusy(true);
     try {
       await billingApi.createSession({
@@ -297,6 +299,7 @@ export default function BillingPage() {
                 <div style={{ display:'flex', gap:8 }}>
                   <button className={`btn btn-sm ${rateType==='HOURLY'?'btn-dark':'btn-outline'}`} onClick={() => { setRateType('HOURLY'); setSelPkg(null); }} style={{ flex:1 }}>Per Jam</button>
                   <button className={`btn btn-sm ${rateType==='FLEXIBLE'?'btn-dark':'btn-outline'}`} onClick={() => { setRateType('FLEXIBLE'); setSelPkg(null); }} style={{ flex:1 }}>Main Bebas</button>
+                  <button className={`btn btn-sm ${rateType==='PACKAGE'?'btn-dark':'btn-outline'}`} onClick={() => { setRateType('PACKAGE'); }} style={{ flex:1 }}>Paket</button>
                 </div>
               </div>
 
@@ -314,19 +317,30 @@ export default function BillingPage() {
                 </div>
               )}
 
-              {pkgs.length > 0 && rateType === 'HOURLY' && (
+              {pkgs.length > 0 && (rateType === 'HOURLY' || rateType === 'PACKAGE') && (
                 <div className="form-group">
-                  <label className="form-label">Paket (opsional)</label>
+                  <label className="form-label">Pilih Paket {rateType === 'PACKAGE' ? <span className="required">*</span> : '(opsional)'}</label>
                   {pkgs.map(p => (
                     <button key={p.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 14px', background: selPkg?.id === p.id ? 'var(--color-gold-pale)' : 'var(--color-surface-2)', border:`1.5px solid ${selPkg?.id === p.id ? 'var(--color-gold)' : 'var(--color-border)'}`, borderRadius:'var(--radius-md)', cursor:'pointer', width:'100%', marginBottom:6, textAlign:'left' }}
-                      onClick={() => setSelPkg(selPkg?.id === p.id ? null : p)}>
+                      onClick={() => setSelPkg(selPkg?.id === p.id && rateType !== 'PACKAGE' ? null : p)}>
                       <div style={{ flex:1 }}>
                         <div style={{ fontWeight:600, fontSize:13 }}>{p.name}</div>
-                        <div style={{ fontSize:11, color:'var(--color-text-muted)' }}>{p.durationMinutes / 60} jam</div>
+                        <div style={{ fontSize:11, color:'var(--color-text-muted)' }}>{p.durationMinutes} menit</div>
+                        {(p.items || []).filter((i) => i.type === 'MENU_ITEM').length > 0 && (
+                          <div style={{ fontSize:11, color:'var(--color-text-muted)', marginTop:3 }}>
+                            Bundle: {(p.items || [])
+                              .filter((i) => i.type === 'MENU_ITEM')
+                              .map((i) => `${i.menuItem?.name || 'Menu'} x${i.quantity}`)
+                              .join(', ')}
+                          </div>
+                        )}
                       </div>
                       <div style={{ fontWeight:700 }}>Rp {Number(p.price).toLocaleString('id-ID')}</div>
                     </button>
                   ))}
+                  {rateType === 'PACKAGE' && !selPkg && (
+                    <div style={{ fontSize:12, color:'var(--color-danger)', marginTop:4 }}>Silakan pilih paket.</div>
+                  )}
                 </div>
               )}
             </div>
