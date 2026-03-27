@@ -3,7 +3,7 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { companyApi, waitingListApi } from '@/lib/api';
-import { Clock3, Users, PhoneCall, Sparkles, PartyPopper, Expand } from 'lucide-react';
+import { Clock3, Users, PhoneCall, Sparkles, PartyPopper, Expand, Sun, CalendarDays } from 'lucide-react';
 
 interface WaitingEntry {
   id: string;
@@ -140,6 +140,10 @@ function WaitingListDisplayContent() {
   const timeLabel = now
     ? now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
     : '--:--:--';
+  const dateLabel = now
+    ? now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    : '-';
+  const openHoursLabel = openHour && closeHour ? `${openHour} - ${closeHour}` : 'Sesuai operasional';
 
   return (
     <div className="waiting-display-shell">
@@ -179,14 +183,24 @@ function WaitingListDisplayContent() {
           />
           <div>
             <h1>{title}</h1>
-            <p>{profile?.name || subtitle || 'Billiard Lounge'} {openHour && closeHour ? `· ${openHour} - ${closeHour}` : ''}</p>
+            <p>{profile?.name || subtitle || 'Billiard Lounge'}</p>
             <small className="display-welcome">Selamat datang! Nikmati permainan terbaik kami 🎱</small>
           </div>
         </div>
 
-        <div className="display-clock" suppressHydrationWarning>
-          <Clock3 size={18} />
-          {timeLabel}
+        <div className="display-header-info">
+          <div className="display-info-pill">
+            <Sun size={15} />
+            Jam Buka: {openHoursLabel}
+          </div>
+          <div className="display-info-pill" suppressHydrationWarning>
+            <CalendarDays size={15} />
+            {dateLabel}
+          </div>
+          <div className="display-clock" suppressHydrationWarning>
+            <Clock3 size={18} />
+            {timeLabel}
+          </div>
         </div>
       </header>
 
