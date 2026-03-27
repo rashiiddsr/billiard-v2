@@ -50,7 +50,7 @@ export default function OwnerWaitingDisplayPage() {
   };
 
   return (
-    <div style={{ maxWidth: 920 }}>
+    <div style={{ width: '100%' }}>
       <div className="page-header">
         <div>
           <h1 className="page-title">Display Waiting List TV</h1>

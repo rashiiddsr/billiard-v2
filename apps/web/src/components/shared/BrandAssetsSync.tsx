@@ -4,11 +4,12 @@ import { useEffect } from 'react';
 import { companyApi } from '@/lib/api';
 
 function resolveAssetUrl(url?: string | null) {
-  if (!url) return '/default-brand.svg';
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const cleaned = url?.trim();
+  if (!cleaned || cleaned === 'null' || cleaned === 'undefined') return '/default-brand.svg';
+  if (cleaned.startsWith('http://') || cleaned.startsWith('https://')) return cleaned;
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
   const origin = apiUrl.replace('/api/v1', '');
-  return `${origin}${url.startsWith('/') ? '' : '/'}${url}`;
+  return `${origin}${cleaned.startsWith('/') ? '' : '/'}${cleaned}`;
 }
 
 export default function BrandAssetsSync() {

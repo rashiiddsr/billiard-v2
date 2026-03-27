@@ -109,11 +109,12 @@ const navConfig: Record<string, NavGroup[]> = {
 };
 
 function resolveAssetUrl(url?: string | null) {
-  if (!url) return '/default-brand.svg';
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const cleaned = url?.trim();
+  if (!cleaned || cleaned === 'null' || cleaned === 'undefined') return '/default-brand.svg';
+  if (cleaned.startsWith('http://') || cleaned.startsWith('https://')) return cleaned;
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
   const origin = apiUrl.replace('/api/v1', '');
-  return `${origin}${url.startsWith('/') ? '' : '/'}${url}`;
+  return `${origin}${cleaned.startsWith('/') ? '' : '/'}${cleaned}`;
 }
 
 export default function Sidebar() {
@@ -137,7 +138,15 @@ export default function Sidebar() {
   return (
     <aside className="layout-sidebar">
       <div className="sidebar-logo">
-        <img src={logoSrc} alt="Logo" className="sidebar-logo-image" />
+        <img
+          src={logoSrc}
+          alt="Logo"
+          className="sidebar-logo-image"
+          onError={(event) => {
+            if (event.currentTarget.src.endsWith('/default-brand.svg')) return;
+            event.currentTarget.src = '/default-brand.svg';
+          }}
+        />
         <div className="sidebar-logo-title">{brand?.name || 'Billiard POS'}</div>
         <div className="sidebar-logo-sub">Premium Management System</div>
       </div>

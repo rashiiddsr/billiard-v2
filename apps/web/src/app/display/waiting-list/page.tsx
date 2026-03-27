@@ -31,10 +31,11 @@ function toDisplayName(entry?: WaitingEntry | null) {
 }
 
 function resolveAssetUrl(url?: string | null) {
-  if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const cleaned = url?.trim();
+  if (!cleaned || cleaned === 'null' || cleaned === 'undefined') return '/default-brand.svg';
+  if (cleaned.startsWith('http://') || cleaned.startsWith('https://')) return cleaned;
   const origin = PUBLIC_API_URL.replace('/api/v1', '');
-  return `${origin}${url.startsWith('/') ? '' : '/'}${url}`;
+  return `${origin}${cleaned.startsWith('/') ? '' : '/'}${cleaned}`;
 }
 
 function WaitingListDisplayContent() {
@@ -167,7 +168,15 @@ function WaitingListDisplayContent() {
 
       <header className="waiting-display-header">
         <div className="brand-block">
-          {!!profile?.logoUrl && <img src={resolveAssetUrl(profile.logoUrl)} alt="Logo" className="brand-logo" />}
+          <img
+            src={resolveAssetUrl(profile?.logoUrl)}
+            alt="Logo"
+            className="brand-logo"
+            onError={(event) => {
+              if (event.currentTarget.src.endsWith('/default-brand.svg')) return;
+              event.currentTarget.src = '/default-brand.svg';
+            }}
+          />
           <div>
             <h1>{title}</h1>
             <p>{profile?.name || subtitle || 'Billiard Lounge'} {openHour && closeHour ? `· ${openHour} - ${closeHour}` : ''}</p>
