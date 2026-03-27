@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ordersApi, api, menuApi, paymentsApi } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { X, Check, Search } from 'lucide-react';
+import { X, Check, Search, AlertTriangle } from 'lucide-react';
 import { formatRupiah } from '@/lib/utils';
 
 export default function CashierOrdersPage() {
@@ -32,7 +32,18 @@ export default function CashierOrdersPage() {
   }, []);
 
   const addToCart = (item: any) => {
-    setCart(c => { const ex = c.find(i => i.menuItemId === item.id); return ex ? c.map(i => i.menuItemId===item.id?{...i,qty:i.qty+1}:i) : [...c,{menuItemId:item.id,name:item.name,price:Number(item.price),qty:1}]; });
+    const stock = item.stock;
+    setCart((c) => {
+      const ex = c.find((i) => i.menuItemId === item.id);
+      const nextQty = ex ? ex.qty + 1 : 1;
+      if (stock?.trackStock && nextQty > Number(stock.qtyOnHand || 0)) {
+        toast.error(`Stok ${item.name} tidak cukup`);
+        return c;
+      }
+      return ex
+        ? c.map((i) => (i.menuItemId === item.id ? { ...i, qty: nextQty } : i))
+        : [...c, { menuItemId: item.id, name: item.name, price: Number(item.price), qty: 1 }];
+    });
   };
   const removeFromCart = (id: string) => setCart(c => c.filter(i => i.menuItemId !== id));
   const total = cart.reduce((s,i) => s+i.price*i.qty, 0);
@@ -135,25 +146,40 @@ export default function CashierOrdersPage() {
 
           <div style={{ flex: 1, overflowY: 'auto', paddingRight: 4 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 10 }}>
-              {filteredMenu.map((m) => (
-                <button
-                  key={m.id}
-                  onClick={() => addToCart(m)}
-                  style={{
-                    textAlign: 'left',
-                    background: 'var(--color-surface)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-md)',
-                    padding: '12px 12px 10px',
-                    minHeight: 108,
-                    cursor: 'pointer',
-                  }}
-                >
-                  <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 4 }}>{m.sku || 'SKU'}</div>
-                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8, lineHeight: 1.25 }}>{m.name}</div>
-                  <div style={{ color: 'var(--color-success)', fontWeight: 800, fontSize: 16 }}>{formatRupiah(m.price)}</div>
-                </button>
-              ))}
+              {filteredMenu.map((m) => {
+                const isTrack = Boolean(m.stock?.trackStock);
+                const qty = Number(m.stock?.qtyOnHand || 0);
+                const threshold = Number(m.stock?.lowStockThreshold || 0);
+                const isLow = isTrack && qty <= threshold;
+                const isOut = isTrack && qty <= 0;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => addToCart(m)}
+                    disabled={isOut}
+                    style={{
+                      textAlign: 'left',
+                      background: 'var(--color-surface)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '12px 12px 10px',
+                      minHeight: 108,
+                      cursor: isOut ? 'not-allowed' : 'pointer',
+                      opacity: isOut ? 0.6 : 1,
+                    }}
+                  >
+                    <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 4 }}>{m.sku || 'SKU'}</div>
+                    <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8, lineHeight: 1.25 }}>{m.name}</div>
+                    <div style={{ color: 'var(--color-success)', fontWeight: 800, fontSize: 16 }}>{formatRupiah(m.price)}</div>
+                    {isTrack && (
+                      <div style={{ marginTop: 4, fontSize: 12, color: isLow ? '#d97706' : 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        {isLow && <AlertTriangle size={12} />}
+                        Sisa {qty}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
             {filteredMenu.length === 0 && (
               <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: 24 }}>Menu tidak ditemukan.</p>
