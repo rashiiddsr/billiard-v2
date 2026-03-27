@@ -171,7 +171,7 @@ export default function CashierOrdersPage() {
                     <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 4 }}>{m.sku || 'SKU'}</div>
                     <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8, lineHeight: 1.25 }}>{m.name}</div>
                     <div style={{ color: 'var(--color-success)', fontWeight: 800, fontSize: 16 }}>{formatRupiah(m.price)}</div>
-                    {isTrack && (
+                    {isTrack && isLow && (
                       <div style={{ marginTop: 4, fontSize: 12, color: isLow ? '#d97706' : 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
                         {isLow && <AlertTriangle size={12} />}
                         Sisa {qty}

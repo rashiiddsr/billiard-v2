@@ -237,7 +237,11 @@ export class MembersService {
       throw new NotFoundException('Member tidak ditemukan');
     }
 
-    const nextEmail = customEmail?.trim().toLowerCase() || member.email;
+    const normalizedEmail = customEmail?.trim().toLowerCase();
+    if (normalizedEmail && !normalizedEmail.includes('@')) {
+      throw new ConflictException('Format email tidak valid');
+    }
+    const nextEmail = normalizedEmail || member.email;
     if (nextEmail !== member.email) {
       const exists = await this.prisma.user.findUnique({ where: { email: nextEmail } });
       if (exists && exists.id !== memberId) {
