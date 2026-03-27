@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { membersApi } from '@/lib/api';
 import { asArray } from '@/lib/utils';
 import toast from 'react-hot-toast';
-import { Search, User, Phone, Hash, Plus } from 'lucide-react';
+import { Search, User, Phone, Hash, Plus, Edit2 } from 'lucide-react';
 
 interface Member {
   id: string;
@@ -21,8 +21,10 @@ export default function CashierMembersPage() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [isActive, setIsActive] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
@@ -41,9 +43,19 @@ export default function CashierMembersPage() {
   }, [load]);
 
   const openCreate = () => {
+    setEditId(null);
     setShowCreate(true);
     setName('');
     setPhone('');
+    setIsActive(true);
+  };
+
+  const openEdit = (member: Member) => {
+    setEditId(member.id);
+    setShowCreate(true);
+    setName(member.name);
+    setPhone(member.phoneNumber);
+    setIsActive(member.isActive);
   };
 
   const handleCreate = async () => {
@@ -52,12 +64,17 @@ export default function CashierMembersPage() {
 
     setSaving(true);
     try {
-      await membersApi.create({ name: name.trim(), phoneNumber: phone.trim() });
-      toast.success('Member berhasil ditambahkan');
+      if (editId) {
+        await membersApi.update(editId, { name: name.trim(), phoneNumber: phone.trim(), isActive });
+        toast.success('Member berhasil diperbarui');
+      } else {
+        await membersApi.create({ name: name.trim(), phoneNumber: phone.trim() });
+        toast.success('Member berhasil ditambahkan');
+      }
       setShowCreate(false);
       load();
     } catch (e: any) {
-      toast.error(e?.response?.data?.message || 'Gagal menambah member');
+      toast.error(e?.response?.data?.message || 'Gagal menyimpan member');
     } finally {
       setSaving(false);
     }
@@ -128,6 +145,9 @@ export default function CashierMembersPage() {
               <div style={{ fontSize: 11, color: 'var(--color-text-light)', textAlign: 'right', flexShrink: 0 }}>
                 {m._count.memberSessions} sesi
               </div>
+              <button className="btn btn-ghost btn-icon btn-sm" onClick={() => openEdit(m)} title="Edit member">
+                <Edit2 size={14} />
+              </button>
             </div>
           ))}
         </div>
@@ -136,7 +156,7 @@ export default function CashierMembersPage() {
       {showCreate && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 16 }}>
           <div className="card card-padded" style={{ width: '100%', maxWidth: 460 }}>
-            <h3 className="card-title mb-4">Tambah Member Baru</h3>
+            <h3 className="card-title mb-4">{editId ? 'Edit Member' : 'Tambah Member Baru'}</h3>
             <div className="form-group">
               <label className="form-label">Nama</label>
               <input className="form-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nama member" autoFocus />
@@ -145,9 +165,18 @@ export default function CashierMembersPage() {
               <label className="form-label">No. HP</label>
               <input className="form-input" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="08xxxxxxxxxx" />
             </div>
+            {editId && (
+              <div className="form-group">
+                <label className="form-label">Status</label>
+                <select className="form-select" value={isActive ? 'true' : 'false'} onChange={(e) => setIsActive(e.target.value === 'true')}>
+                  <option value="true">Aktif</option>
+                  <option value="false">Nonaktif</option>
+                </select>
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
               <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => setShowCreate(false)} disabled={saving}>Batal</button>
-              <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleCreate} disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan Member'}</button>
+              <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleCreate} disabled={saving}>{saving ? 'Menyimpan...' : editId ? 'Simpan Perubahan' : 'Simpan Member'}</button>
             </div>
           </div>
         </div>
