@@ -19,8 +19,8 @@ class CreateBillingSessionDto {
   @IsInt() @Min(1)
   durationMinutes: number;
 
-  @IsOptional() @IsIn(['HOURLY', 'FLEXIBLE'])
-  rateType?: 'HOURLY' | 'FLEXIBLE';
+  @IsOptional() @IsIn(['HOURLY', 'FLEXIBLE', 'PACKAGE'])
+  rateType?: 'HOURLY' | 'FLEXIBLE' | 'PACKAGE';
 
   @IsOptional() @IsString()
   billingPackageId?: string;

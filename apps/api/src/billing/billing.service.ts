@@ -20,7 +20,7 @@ import { Decimal } from '@prisma/client/runtime/library';
 interface CreateBillingDto {
   tableId: string;
   durationMinutes: number;
-  rateType?: 'HOURLY' | 'FLEXIBLE';
+  rateType?: 'HOURLY' | 'FLEXIBLE' | 'PACKAGE';
   billingPackageId?: string;
   // Identitas tamu
   guestName?: string;    // jika tamu non-member
@@ -96,6 +96,10 @@ export class BillingService {
 
     const selectedRateType = dto.rateType || 'HOURLY';
     const isFlexible = !isOwnerLock && selectedRateType === 'FLEXIBLE';
+    const usePackage = !isOwnerLock && (selectedRateType === 'PACKAGE' || !!dto.billingPackageId);
+    if (!isOwnerLock && selectedRateType === 'PACKAGE' && !dto.billingPackageId) {
+      throw new BadRequestException('Pilih paket billing terlebih dahulu');
+    }
     const ratePerHour = isOwnerLock
       ? new Decimal(0)
       : new Decimal(table.hourlyRate.toString());
@@ -104,7 +108,7 @@ export class BillingService {
     let packageOriginalPrice: Decimal | undefined;
     let packagePrice: Decimal | undefined;
 
-    if (dto.billingPackageId && !isOwnerLock) {
+    if (usePackage && dto.billingPackageId) {
       const pkg = await this.prisma.billingPackage.findUnique({
         where: { id: dto.billingPackageId },
         include: { items: true },
@@ -126,7 +130,7 @@ export class BillingService {
     const effectiveDuration = isOwnerLock || isFlexible ? 525600 : dto.durationMinutes;
     const endTime = new Date(startTime.getTime() + effectiveDuration * 60 * 1000);
     const totalAmount =
-      dto.billingPackageId && !isOwnerLock
+      usePackage
         ? packagePrice ?? new Decimal(0)
         : isOwnerLock
         ? new Decimal(0)
@@ -135,7 +139,7 @@ export class BillingService {
         : ratePerHour.mul(effectiveDuration).div(60).toDecimalPlaces(0);
 
     const appliedRateType =
-      dto.billingPackageId && !isOwnerLock
+      usePackage
         ? 'PACKAGE'
         : isOwnerLock
         ? 'OWNER_LOCK'
@@ -169,7 +173,7 @@ export class BillingService {
       data: { status: TableStatus.OCCUPIED },
     });
 
-    if (dto.billingPackageId && !isOwnerLock) {
+    if (usePackage && dto.billingPackageId) {
       await this.applyPackage(session.id, dto.billingPackageId, userId, session.tableId, dto.durationMinutes);
     }
 
