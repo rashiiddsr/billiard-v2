@@ -1,11 +1,11 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { menuApi } from '@/lib/api';
+import { menuApi, stockApi } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Plus, Edit2, Trash2, X, Search } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Search, Boxes } from 'lucide-react';
 import { asArray, formatRupiah } from '@/lib/utils';
 
-interface MenuItem { id: string; sku: string; name: string; category: string; price: string; cost?: string; isActive: boolean; }
+interface MenuItem { id: string; sku: string; name: string; category: string; price: string; cost?: string; isActive: boolean; stock?: { qtyOnHand: number }; }
 interface Category { id: string; name: string; skuPrefix: string; }
 
 interface Props { canEdit?: boolean; }
@@ -20,6 +20,11 @@ export default function MenuPage({ canEdit = true }: Props) {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', category: '', price: '', cost: '', isActive: true });
   const [busy, setBusy] = useState(false);
+  const [stockItem, setStockItem] = useState<MenuItem | null>(null);
+  const [stockMode, setStockMode] = useState<'RESTOCK' | 'REDUCTION' | 'ADJUSTMENT'>('RESTOCK');
+  const [stockValue, setStockValue] = useState('');
+  const [stockNotes, setStockNotes] = useState('');
+  const [stockBusy, setStockBusy] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -49,6 +54,51 @@ export default function MenuPage({ canEdit = true }: Props) {
     if (!confirm('Hapus menu ini?')) return;
     try { await menuApi.remove(id); toast.success('Menu dihapus'); load(); }
     catch (e: any) { toast.error(e?.response?.data?.message || 'Gagal'); }
+  };
+
+  const openStockModal = (item: MenuItem) => {
+    setStockItem(item);
+    setStockMode('RESTOCK');
+    setStockValue('');
+    setStockNotes('');
+  };
+
+  const closeStockModal = () => {
+    setStockItem(null);
+    setStockMode('RESTOCK');
+    setStockValue('');
+    setStockNotes('');
+  };
+
+  const submitStockAdjustment = async () => {
+    if (!stockItem) return;
+    const amount = Number(stockValue);
+    if (!amount || Number.isNaN(amount)) return toast.error('Nilai stok wajib diisi');
+    if (!stockNotes.trim()) return toast.error('Catatan wajib diisi');
+
+    const quantityDelta = stockMode === 'RESTOCK'
+      ? Math.abs(amount)
+      : stockMode === 'REDUCTION'
+      ? -Math.abs(amount)
+      : amount;
+    if (quantityDelta === 0) return toast.error('Nilai penyesuaian tidak boleh 0');
+
+    const actionType = stockMode === 'RESTOCK' ? 'RESTOCK' : 'MANUAL_ADJUSTMENT';
+    setStockBusy(true);
+    try {
+      await stockApi.adjustStock(stockItem.id, {
+        actionType,
+        quantityDelta,
+        notes: stockNotes.trim(),
+      });
+      toast.success('Stok berhasil diperbarui');
+      closeStockModal();
+      load();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Gagal update stok');
+    } finally {
+      setStockBusy(false);
+    }
   };
 
   return (
@@ -83,6 +133,7 @@ export default function MenuPage({ canEdit = true }: Props) {
                   <td>{m.cost ? formatRupiah(m.cost) : '—'}</td>
                   <td><span className={`badge ${m.isActive ? 'badge-success' : 'badge-danger'}`}>{m.isActive ? 'Aktif' : 'Nonaktif'}</span></td>
                   {canEdit && <td><div style={{ display: 'flex', gap: 4 }}>
+                    <button className="btn btn-ghost btn-icon btn-sm" onClick={() => openStockModal(m)} title="Modifikasi stok"><Boxes size={13} /></button>
                     <button className="btn btn-ghost btn-icon btn-sm" onClick={() => openEdit(m)}><Edit2 size={13} /></button>
                     <button className="btn btn-ghost btn-icon btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => handleDelete(m.id)}><Trash2 size={13} /></button>
                   </div></td>}
@@ -117,6 +168,56 @@ export default function MenuPage({ canEdit = true }: Props) {
             <div className="card-footer" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Batal</button>
               <button className="btn btn-primary" onClick={handleSave} disabled={busy}>{busy ? 'Menyimpan...' : 'Simpan'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {stockItem && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
+          <div className="card" style={{ width: '100%', maxWidth: 460 }}>
+            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <h3 className="card-title">Modifikasi Stok — {stockItem.name}</h3>
+              <button className="btn btn-ghost btn-icon" onClick={closeStockModal}><X size={18} /></button>
+            </div>
+            <div className="card-body">
+              <div className="form-group">
+                <label className="form-label">Stok saat ini</label>
+                <div style={{ fontWeight: 700 }}>{stockItem.stock?.qtyOnHand ?? 0}</div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Aksi *</label>
+                <select className="form-select" value={stockMode} onChange={(e) => setStockMode(e.target.value as any)}>
+                  <option value="RESTOCK">Restok</option>
+                  <option value="REDUCTION">Pengurangan Manual</option>
+                  <option value="ADJUSTMENT">Penyesuaian Manual</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Nilai *</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  value={stockValue}
+                  onChange={(e) => setStockValue(e.target.value)}
+                  placeholder={stockMode === 'ADJUSTMENT' ? 'contoh: -2 / 3' : 'contoh: 2'}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Catatan *</label>
+                <textarea
+                  className="form-input"
+                  rows={3}
+                  value={stockNotes}
+                  onChange={(e) => setStockNotes(e.target.value)}
+                  placeholder="Wajib isi alasan perubahan stok"
+                />
+              </div>
+            </div>
+            <div className="card-footer" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn btn-ghost" onClick={closeStockModal}>Batal</button>
+              <button className="btn btn-primary" onClick={submitStockAdjustment} disabled={stockBusy}>
+                {stockBusy ? 'Menyimpan...' : 'Simpan'}
+              </button>
             </div>
           </div>
         </div>

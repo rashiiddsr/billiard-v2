@@ -443,13 +443,15 @@ export class BillingService {
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async removeCompletedUnpaidSession(sessionId: string, userId: string) {
+  async removeUnpaidSession(sessionId: string, userId: string) {
     const session = await this.prisma.billingSession.findUnique({
       where: { id: sessionId },
       include: { payments: { where: { status: 'PAID' } }, orders: { where: { status: { not: 'CANCELLED' } } } },
     });
     if (!session) throw new NotFoundException('Sesi tidak ditemukan');
-    if (session.status !== SessionStatus.COMPLETED) throw new BadRequestException('Hanya sesi selesai yang bisa dihapus');
+    if (session.status !== SessionStatus.ACTIVE && session.status !== SessionStatus.COMPLETED) {
+      throw new BadRequestException('Hanya sesi aktif atau selesai (belum dibayar) yang bisa dihapus');
+    }
     if (session.payments.length > 0) throw new BadRequestException('Sesi sudah dibayar, tidak bisa dihapus');
 
     await this.prisma.$transaction(async (tx) => {
@@ -460,6 +462,12 @@ export class BillingService {
       }
       await tx.sessionPackageUsage.deleteMany({ where: { billingSessionId: session.id } });
       await tx.billingSession.delete({ where: { id: session.id } });
+      if (session.status === SessionStatus.ACTIVE) {
+        await tx.table.update({
+          where: { id: session.tableId },
+          data: { status: TableStatus.AVAILABLE },
+        });
+      }
     });
 
     await this.audit.log({ userId, action: AuditAction.DELETE, entity: 'BillingSession', entityId: sessionId });
