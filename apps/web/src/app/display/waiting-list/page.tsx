@@ -31,7 +31,7 @@ function toDisplayName(entry?: WaitingEntry | null) {
 }
 
 function resolveAssetUrl(url?: string | null) {
-  if (!url) return '';
+  if (!url) return '/default-brand.svg';
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
   const origin = PUBLIC_API_URL.replace('/api/v1', '');
   return `${origin}${url.startsWith('/') ? '' : '/'}${url}`;
@@ -167,7 +167,7 @@ function WaitingListDisplayContent() {
 
       <header className="waiting-display-header">
         <div className="brand-block">
-          {!!profile?.logoUrl && <img src={resolveAssetUrl(profile.logoUrl)} alt="Logo" className="brand-logo" />}
+          <img src={resolveAssetUrl(profile?.logoUrl)} alt="Logo" className="brand-logo" />
           <div>
             <h1>{title}</h1>
             <p>{profile?.name || subtitle || 'Billiard Lounge'} {openHour && closeHour ? `· ${openHour} - ${closeHour}` : ''}</p>
