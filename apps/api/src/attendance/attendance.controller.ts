@@ -52,7 +52,7 @@ export class AttendanceController {
   // ─── Check-in (semua staff) ───────────────────────────────────────────────
 
   @Post('check-in')
-  @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any, 'DEVELOPER' as any)
+  @Roles('MANAGER' as any, 'CASHIER' as any)
   checkIn(@Body() dto: CheckInDto, @CurrentUser() user: any) {
     return this.attendanceService.checkIn(user.id, dto);
   }
@@ -60,7 +60,7 @@ export class AttendanceController {
   // ─── Shift aktif sekarang ─────────────────────────────────────────────────
 
   @Get('shifts/active-now')
-  @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any, 'DEVELOPER' as any)
+  @Roles('MANAGER' as any, 'CASHIER' as any)
   getActiveShifts() {
     return this.attendanceService.getActiveShifts();
   }
@@ -68,7 +68,7 @@ export class AttendanceController {
   // ─── Riwayat saya ─────────────────────────────────────────────────────────
 
   @Get('my-records')
-  @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any, 'DEVELOPER' as any)
+  @Roles('MANAGER' as any, 'CASHIER' as any)
   getMyRecords(
     @CurrentUser() user: any,
     @Query('startDate') startDate?: string,
@@ -111,7 +111,7 @@ export class AttendanceController {
   // ─── Shift management (owner) ─────────────────────────────────────────────
 
   @Get('shifts')
-  @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any, 'DEVELOPER' as any)
+  @Roles('MANAGER' as any, 'CASHIER' as any)
   listShifts(@Query('includeInactive') inc?: string) {
     return this.attendanceService.listShifts(inc === 'true');
   }

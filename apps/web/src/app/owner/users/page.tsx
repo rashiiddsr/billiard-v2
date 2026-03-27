@@ -5,7 +5,7 @@ import { asArray } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Plus, Edit2, X } from 'lucide-react';
 
-const ROLES = ['OWNER','MANAGER','CASHIER','DEVELOPER'];
+const ROLES = ['OWNER','MANAGER','CASHIER'];
 
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -34,7 +34,7 @@ export default function UsersPage() {
     finally { setBusy(false); }
   };
 
-  const roleColors: Record<string,string> = { OWNER:'badge-danger',MANAGER:'badge-info',CASHIER:'badge-warning',DEVELOPER:'badge-neutral' };
+  const roleColors: Record<string,string> = { OWNER:'badge-danger',MANAGER:'badge-info',CASHIER:'badge-warning' };
 
   return (
     <div>

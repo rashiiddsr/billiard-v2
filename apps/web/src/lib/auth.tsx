@@ -8,7 +8,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'OWNER' | 'DEVELOPER' | 'MANAGER' | 'CASHIER' | 'MEMBER';
+  role: 'OWNER' | 'MANAGER' | 'CASHIER' | 'MEMBER';
   phoneNumber?: string;
   profileImageUrl?: string | null;
   memberNumber?: string | null;
@@ -21,7 +21,6 @@ interface AuthContextType {
   logout: () => Promise<void>;
   setUser: (user: User) => void;
   isOwner: boolean;
-  isDeveloper: boolean;
   isManager: boolean;
   isCashier: boolean;
   isMember: boolean;
@@ -41,7 +40,6 @@ const getCookieOptions = () => ({
 
 const HOME_MAP: Record<string, string> = {
   OWNER:     '/owner/dashboard',
-  DEVELOPER: '/developer/dashboard',
   MANAGER:   '/manager/dashboard',
   CASHIER:   '/cashier/dashboard',
   MEMBER:    '/owner/dashboard',
@@ -169,7 +167,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         setUser: setAndPersistUser,
         isOwner:     user?.role === 'OWNER',
-        isDeveloper: user?.role === 'DEVELOPER',
         isManager:   user?.role === 'MANAGER',
         isCashier:   user?.role === 'CASHIER',
         isMember:    user?.role === 'MEMBER',

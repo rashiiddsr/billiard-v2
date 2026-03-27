@@ -88,6 +88,10 @@ export class UsersService {
   }
 
   async create(dto: CreateUserDto, createdById: string) {
+    if (dto.role === Role.DEVELOPER) {
+      throw new BadRequestException('Role DEVELOPER sudah tidak digunakan');
+    }
+
     const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (existing) throw new ConflictException('Email already exists');
 
@@ -132,6 +136,9 @@ export class UsersService {
     }
 
     const nextRole = dto.role ?? existing.role;
+    if (nextRole === Role.DEVELOPER) {
+      throw new BadRequestException('Role DEVELOPER sudah tidak digunakan');
+    }
     if (dto.pin && nextRole !== Role.OWNER) {
       throw new BadRequestException('PIN hanya boleh untuk role OWNER');
     }
