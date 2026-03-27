@@ -49,14 +49,11 @@ function WaitingListDisplayContent() {
   const [hideFullscreenButton, setHideFullscreenButton] = useState(false);
   const calledIdsRef = useRef<Set<string>>(new Set());
 
-  const title = 'WAITING LIST';
-  const subtitle = 'Antrian Billiard Hari Ini';
+  const title = searchParams.get('title') || 'WAITING LIST';
+  const subtitle = searchParams.get('subtitle') || 'Antrian Billiard Hari Ini';
   const marquee = searchParams.get('marquee') || FALLBACK_MARQUEE;
   const refreshMs = Number(searchParams.get('refreshMs') || '10000');
   const modalDurationMs = Number(searchParams.get('modalMs') || '7000');
-  const externalLink = searchParams.get('link') || '';
-  const openHour = searchParams.get('openHour') || '';
-  const closeHour = searchParams.get('closeHour') || '';
 
   const mediaItems = useMemo(() => {
     const mediaFromList = (searchParams.get('media') || '')
@@ -171,7 +168,7 @@ function WaitingListDisplayContent() {
           {!!profile?.logoUrl && <img src={resolveAssetUrl(profile.logoUrl)} alt="Logo" className="brand-logo" />}
           <div>
             <h1>{title}</h1>
-            <p>{profile?.name || subtitle || 'Billiard Lounge'} {openHour && closeHour ? `· ${openHour} - ${closeHour}` : ''}</p>
+            <p>{subtitle || profile?.name || 'Billiard Lounge'}</p>
           </div>
         </div>
 
@@ -223,7 +220,7 @@ function WaitingListDisplayContent() {
               <img src={mediaItems[activeMediaIndex]} alt="Media display" className="display-media-image" />
             ) : (
               <div className="display-media-empty">
-                Tambahkan media dari menu owner agar promo tampil menarik.
+                Tambahkan media via URL setting owner untuk membuat display lebih hidup.
               </div>
             )}
           </div>
@@ -232,7 +229,6 @@ function WaitingListDisplayContent() {
 
       <footer className="display-marquee-wrap glass-soft">
         <div className="display-marquee-track">{marquee}</div>
-        {externalLink ? <a href={externalLink} target="_blank" rel="noreferrer" className="display-link-pill">Info</a> : null}
       </footer>
     </div>
   );
