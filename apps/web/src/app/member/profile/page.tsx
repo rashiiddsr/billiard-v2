@@ -15,7 +15,7 @@ export default function MemberProfilePage() {
   const initials = user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <div style={{ maxWidth: 480 }}>
+    <div style={{ maxWidth: 480, margin: '0 auto' }}>
       <div className="page-header">
         <div>
           <h1 className="page-title">Profil Saya</h1>

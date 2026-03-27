@@ -465,6 +465,14 @@ table.data-table tbody:empty::before {
   font-style: italic;
 }
 
+
+.table-empty-cell {
+  text-align: center;
+  padding: 32px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
 /* ─── Badges / Pills ─────────────────────────────────────────────────────────── */
 .badge {
   display: inline-flex;

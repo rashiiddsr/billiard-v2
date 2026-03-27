@@ -64,7 +64,7 @@ export default function CashierCheckoutPage() {
   return (
     <div>
       <div className="page-header"><div><h1 className="page-title">Checkout Pembayaran</h1></div></div>
-      <div style={{ maxWidth: 560 }}>
+      <div style={{ maxWidth: 560, margin: '0 auto' }}>
         <div className="form-group mb-4">
           <label className="form-label">Pilih Sesi yang Selesai</label>
           <select className="form-select" value={selId} onChange={e => { setSelId(e.target.value); loadSession(e.target.value); }}>
