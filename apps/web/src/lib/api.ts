@@ -154,8 +154,17 @@ export const membersApi = {
     api.post('/members', data).then((r) => r.data),
   update:      (id: string, data: any) =>
     api.patch(`/members/${id}`, data).then((r) => r.data),
-  resetCredentials: (id: string, data?: { email?: string }) =>
-    api.patch(`/members/${id}/reset-credentials`, data || {}).then((r) => r.data),
+  resetCredentials: async (id: string, data?: { email?: string }) => {
+    try {
+      const res = await api.patch(`/members/${id}/reset-credentials`, data || {});
+      return res.data;
+    } catch (err: any) {
+      if (err?.response?.status === 404 || String(err?.response?.data || '').includes('Cannot PATCH')) {
+        return api.post(`/members/${id}/reset-credentials`, data || {}).then((r) => r.data);
+      }
+      throw err;
+    }
+  },
   search:      (q: string) =>
     api.get('/members/search', { params: { q } }).then((r) => r.data),
   myProfile:   () => api.get('/members/profile/me').then((r) => r.data),
