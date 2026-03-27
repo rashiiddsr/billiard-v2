@@ -95,8 +95,8 @@ export class BillingController {
 
   @Delete('sessions/:id')
   @Roles('OWNER' as any, 'MANAGER' as any)
-  removeCompletedUnpaidSession(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.billingService.removeCompletedUnpaidSession(id, user.id);
+  removeUnpaidSession(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.billingService.removeUnpaidSession(id, user.id);
   }
 
   @Patch('sessions/:id/extend')

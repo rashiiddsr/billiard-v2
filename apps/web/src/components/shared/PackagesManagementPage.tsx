@@ -84,6 +84,10 @@ export default function PackagesManagementPage() {
     return Math.round((hourlyRate * duration) / 60);
   }, [form.targetHourlyRate, form.durationMinutes]);
 
+  const bundleNormalTotal = useMemo(() => {
+    return form.items.reduce((sum, item) => sum + (Number(item.unitPrice || 0) * Number(item.quantity || 0)), billingUnitPrice);
+  }, [billingUnitPrice, form.items]);
+
   const openCreate = () => {
     setEditId(null);
     setForm(defaultForm());
@@ -97,7 +101,7 @@ export default function PackagesManagementPage() {
       .map((item: any) => ({
         type: 'MENU_ITEM' as const,
         menuItemId: item.menuItemId || '',
-        quantity: Number(item.quantity || 1),
+        quantity: Number(item.quantity ?? 1),
         unitPrice: Number(item.unitPrice || 0),
       }));
 
@@ -152,7 +156,7 @@ export default function PackagesManagementPage() {
       .map((item) => ({
         type: 'MENU_ITEM',
         menuItemId: item.menuItemId,
-        quantity: Number(item.quantity || 1),
+        quantity: Number(item.quantity ?? 0),
         unitPrice: Number(item.unitPrice || 0),
       }));
 
@@ -312,6 +316,9 @@ export default function PackagesManagementPage() {
                 <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
                   Dasar billing otomatis: {formatRupiah(billingUnitPrice)} (durasi × tarif target / 60).
                 </div>
+                <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
+                  Total harga normal komponen: {formatRupiah(bundleNormalTotal)}. Harga paket promo harus ≤ nilai ini.
+                </div>
               </div>
 
               <div style={{ border: '1px solid var(--color-border)', borderRadius: 10, padding: 12 }}>
@@ -336,13 +343,12 @@ export default function PackagesManagementPage() {
                       </div>
                       <div className="form-group" style={{ marginBottom: 0 }}>
                         <label className="form-label">Qty</label>
-                        <input type="number" min={1} className="form-input" value={item.quantity}
-                          onChange={(e) => updateMenuItemRow(idx, { quantity: Number(e.target.value || 1) })} />
+                        <input type="number" min={0} className="form-input" value={item.quantity}
+                          onChange={(e) => updateMenuItemRow(idx, { quantity: Number(e.target.value || 0) })} />
                       </div>
                       <div className="form-group" style={{ marginBottom: 0 }}>
                         <label className="form-label">Harga Item (Rp)</label>
-                        <input type="number" min={0} className="form-input" value={item.unitPrice}
-                          onChange={(e) => updateMenuItemRow(idx, { unitPrice: Number(e.target.value || 0) })} />
+                        <input type="number" min={0} className="form-input" value={item.unitPrice} readOnly />
                       </div>
                       <button className="btn btn-danger btn-icon" onClick={() => removeMenuItemRow(idx)} disabled={form.items.length === 1}><X size={14} /></button>
                     </div>

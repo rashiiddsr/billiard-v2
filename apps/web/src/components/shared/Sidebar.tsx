@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import {
   LayoutDashboard, Users, ClipboardList, CreditCard, Package,
-  UtensilsCrossed, BarChart3, Wallet, Archive, User,
+  UtensilsCrossed, BarChart3, Wallet, User,
   Building2, ScrollText, Timer, ListOrdered, UserCheck,
   CalendarCheck, Clock, ChevronRight, MonitorSmartphone
 } from 'lucide-react';
@@ -41,7 +41,6 @@ const navConfig: Record<string, NavGroup[]> = {
         { label: 'Paket', href: '/owner/packages', icon: Package },
         { label: 'Menu', href: '/owner/menu', icon: UtensilsCrossed },
         { label: 'Kategori Menu', href: '/owner/menu-categories', icon: ListOrdered },
-        { label: 'Stok', href: '/owner/stock', icon: Archive },
       ],
     },
     {
@@ -73,7 +72,6 @@ const navConfig: Record<string, NavGroup[]> = {
         { label: 'Menu', href: '/manager/menu', icon: UtensilsCrossed },
         { label: 'Kategori Menu', href: '/manager/menu-categories', icon: ListOrdered },
         { label: 'Paket', href: '/manager/packages', icon: Package },
-        { label: 'Stok', href: '/manager/stock', icon: Archive },
         { label: 'Pengeluaran', href: '/manager/expenses', icon: Wallet },
       ],
     },
@@ -120,7 +118,6 @@ const navConfig: Record<string, NavGroup[]> = {
         { label: 'Paket', href: '/owner/packages', icon: Package },
         { label: 'Menu', href: '/owner/menu', icon: UtensilsCrossed },
         { label: 'Kategori Menu', href: '/owner/menu-categories', icon: ListOrdered },
-        { label: 'Stok', href: '/owner/stock', icon: Archive },
       ],
     },
     {

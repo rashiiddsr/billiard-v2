@@ -91,7 +91,7 @@ export class PackagesService {
     }
   }
 
-  private async validateItems(dto: UpsertBillingPackageDto) {
+  private async validateAndNormalizeItems(dto: UpsertBillingPackageDto) {
     const billingItems = dto.items.filter((item) => item.type === 'BILLING');
     if (billingItems.length > 1) throw new BadRequestException('Item billing maksimal 1 per paket');
 
@@ -105,26 +105,62 @@ export class PackagesService {
     }
 
     const menuItems = dto.items.filter((item) => item.type === 'MENU_ITEM');
-    for (const item of menuItems) {
+    const menuItemIds = Array.from(new Set(menuItems.map((item) => item.menuItemId).filter(Boolean) as string[]));
+    const menus = menuItemIds.length > 0
+      ? await this.prisma.menuItem.findMany({
+        where: { id: { in: menuItemIds } },
+        select: { id: true, isActive: true, name: true, price: true },
+      })
+      : [];
+    const menuMap = new Map(menus.map((menu) => [menu.id, menu]));
+
+    const normalizedItems = dto.items.map((item) => {
+      if (item.type === 'BILLING') {
+        if (item.menuItemId) {
+          throw new BadRequestException('Item BILLING tidak boleh memiliki menuItemId');
+        }
+        const billingUnitPrice = new Prisma.Decimal(dto.targetHourlyRate.toString())
+          .mul(dto.durationMinutes || 0)
+          .div(60)
+          .toDecimalPlaces(2);
+        return {
+          type: 'BILLING' as const,
+          menuItemId: null,
+          quantity: 1,
+          unitPrice: billingUnitPrice,
+        };
+      }
+
       if (!item.menuItemId) {
         throw new BadRequestException('Menu wajib dipilih untuk item F&B');
       }
-      const menu = await this.prisma.menuItem.findUnique({
-        where: { id: item.menuItemId },
-        select: { id: true, isActive: true, name: true },
-      });
-      if (!menu) throw new BadRequestException(`Menu item ${item.menuItemId} tidak ditemukan`);
-      if (!menu.isActive) throw new BadRequestException(`Menu ${menu.name} sedang nonaktif`);
-    }
-
-    for (const item of dto.items) {
-      if (item.type === 'BILLING' && item.menuItemId) {
-        throw new BadRequestException('Item BILLING tidak boleh memiliki menuItemId');
-      }
-      if (item.type === 'MENU_ITEM' && item.quantity < 1) {
+      if (item.quantity < 1) {
         throw new BadRequestException('Kuantitas item F&B minimal 1');
       }
+
+      const menu = menuMap.get(item.menuItemId);
+      if (!menu) throw new BadRequestException(`Menu item ${item.menuItemId} tidak ditemukan`);
+      if (!menu.isActive) throw new BadRequestException(`Menu ${menu.name} sedang nonaktif`);
+      return {
+        type: 'MENU_ITEM' as const,
+        menuItemId: menu.id,
+        quantity: item.quantity,
+        unitPrice: new Prisma.Decimal(menu.price.toString()).toDecimalPlaces(2),
+      };
+    });
+
+    const originalTotal = normalizedItems.reduce(
+      (sum, item) => sum.plus(item.unitPrice.mul(item.quantity)),
+      new Prisma.Decimal(0),
+    );
+    const packagePrice = new Prisma.Decimal(dto.price.toString()).toDecimalPlaces(2);
+    if (packagePrice.greaterThan(originalTotal)) {
+      throw new BadRequestException(
+        `Harga paket tidak boleh lebih mahal dari total normal (${originalTotal.toFixed(0)}).`,
+      );
     }
+
+    return normalizedItems;
   }
 
   async list() {
@@ -166,7 +202,7 @@ export class PackagesService {
     const normalizedName = this.normalizeName(dto.name || '');
     if (!normalizedName) throw new BadRequestException('Nama paket wajib diisi');
 
-    await this.validateItems(dto);
+    const normalizedItems = await this.validateAndNormalizeItems(dto);
     await this.validateTargetHourlyRate(dto.targetHourlyRate);
 
     return this.prisma.billingPackage.create({
@@ -177,11 +213,11 @@ export class PackagesService {
         isActive: dto.isActive ?? true,
         targetHourlyRate: dto.targetHourlyRate,
         items: {
-          create: dto.items.map((item) => ({
+          create: normalizedItems.map((item) => ({
             type: item.type,
-            menuItemId: item.menuItemId,
+            menuItemId: item.menuItemId || undefined,
             quantity: item.quantity,
-            unitPrice: item.unitPrice,
+            unitPrice: item.unitPrice.toFixed(2),
           })),
         },
       },
@@ -196,7 +232,7 @@ export class PackagesService {
     const normalizedName = this.normalizeName(dto.name || '');
     if (!normalizedName) throw new BadRequestException('Nama paket wajib diisi');
 
-    await this.validateItems(dto);
+    const normalizedItems = await this.validateAndNormalizeItems(dto);
     await this.validateTargetHourlyRate(dto.targetHourlyRate);
 
     await this.prisma.billingPackage.update({
@@ -209,11 +245,11 @@ export class PackagesService {
         targetHourlyRate: dto.targetHourlyRate,
         items: {
           deleteMany: {},
-          create: dto.items.map((item) => ({
+          create: normalizedItems.map((item) => ({
             type: item.type,
-            menuItemId: item.menuItemId,
+            menuItemId: item.menuItemId || undefined,
             quantity: item.quantity,
-            unitPrice: item.unitPrice,
+            unitPrice: item.unitPrice.toFixed(2),
           })),
         },
       },

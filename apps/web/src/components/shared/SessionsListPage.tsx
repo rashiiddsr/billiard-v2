@@ -2,7 +2,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { billingApi } from '@/lib/api';
 import { asArray, formatRupiah, formatDateTime, formatDuration } from '@/lib/utils';
-import { Filter, RefreshCw } from 'lucide-react';
+import { Filter, RefreshCw, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface Session { id: string; startTime: string; actualEndTime: string | null; durationMinutes: number; totalAmount: string; rateType: string; status: string; guestName?: string; member?: { name: string; memberNumber: string }; table: { name: string }; payments: any[]; createdBy: { name: string }; }
 const statusCls: Record<string, string> = { ACTIVE: 'badge-warning', COMPLETED: 'badge-success', CANCELLED: 'badge-neutral' };
@@ -29,6 +30,17 @@ export default function SessionsListPage({ title, subtitle }: Props) {
 
   useEffect(() => { load(); }, [load]);
 
+  const handleDelete = async (session: Session) => {
+    if (!confirm(`Hapus sesi meja ${session.table.name}?`)) return;
+    try {
+      await billingApi.deleteSession(session.id);
+      toast.success('Sesi billing dihapus');
+      load();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Gagal menghapus sesi');
+    }
+  };
+
   return (
     <div>
       <div className="page-header">
@@ -47,10 +59,10 @@ export default function SessionsListPage({ title, subtitle }: Props) {
       <div className="card">
         <div className="table-wrapper">
           <table className="data-table">
-            <thead><tr><th>Meja</th><th>Tamu / Member</th><th>Mulai</th><th>Durasi</th><th>Total</th><th>Tipe</th><th>Status</th></tr></thead>
+            <thead><tr><th>Meja</th><th>Tamu / Member</th><th>Mulai</th><th>Durasi</th><th>Total</th><th>Tipe</th><th>Status</th><th>Aksi</th></tr></thead>
             <tbody>
-              {loading ? <tr><td colSpan={7} style={{ textAlign: 'center', padding: 32 }}>Memuat...</td></tr>
-              : sessions.length === 0 ? <tr><td colSpan={7} style={{ textAlign: 'center', padding: 32, color: 'var(--color-text-muted)' }}>Tidak ada data</td></tr>
+              {loading ? <tr><td colSpan={8} style={{ textAlign: 'center', padding: 32 }}>Memuat...</td></tr>
+              : sessions.length === 0 ? <tr><td colSpan={8} style={{ textAlign: 'center', padding: 32, color: 'var(--color-text-muted)' }}>Tidak ada data</td></tr>
               : sessions.map(s => (
                 <tr key={s.id}>
                   <td style={{ fontWeight: 600 }}>{s.table.name}</td>
@@ -62,6 +74,13 @@ export default function SessionsListPage({ title, subtitle }: Props) {
                   <td style={{ fontWeight: 600 }}>{formatRupiah(s.totalAmount)}</td>
                   <td><span className="badge badge-neutral" style={{ fontSize: 11 }}>{s.rateType}</span></td>
                   <td><span className={`badge ${statusCls[s.status] || 'badge-neutral'}`}>{statusLabel[s.status] || s.status}</span></td>
+                  <td>
+                    {['ACTIVE', 'COMPLETED'].includes(s.status) && (!s.payments || s.payments.length === 0) ? (
+                      <button className="btn btn-ghost btn-icon btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => handleDelete(s)} title="Hapus sesi">
+                        <Trash2 size={13} />
+                      </button>
+                    ) : '—'}
+                  </td>
                 </tr>
               ))}
             </tbody>
