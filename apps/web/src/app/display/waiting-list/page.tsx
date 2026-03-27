@@ -160,10 +160,7 @@ function WaitingListDisplayContent() {
   const dateLabel = now
     ? now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
     : '-';
-  const effectiveOpenHour = openHour || companyHours.openHour;
-  const effectiveCloseHour = closeHour || companyHours.closeHour;
-  const formatOperationalTime = (value: string) => value.replace(':', '.');
-  const openHoursLabel = `${formatOperationalTime(effectiveOpenHour)} - ${formatOperationalTime(effectiveCloseHour)} WIB`;
+  const openHoursLabel = openHour && closeHour ? `${openHour} - ${closeHour}` : 'Sesuai operasional';
 
   return (
     <div className="waiting-display-shell">
