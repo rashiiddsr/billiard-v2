@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { membersApi } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Copy, Edit2, Plus, RefreshCw, Search, X } from 'lucide-react';
+import { Copy, Edit2, Eye, Plus, RefreshCw, Search, X } from 'lucide-react';
 
 interface Member {
   id: string;
@@ -38,6 +38,7 @@ export default function MembersManagementPage() {
   const [credentialResult, setCredentialResult] = useState<Credentials | null>(null);
   const [resetTarget, setResetTarget] = useState<Member | null>(null);
   const [resetEmail, setResetEmail] = useState('');
+  const [detailMember, setDetailMember] = useState<any | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -63,6 +64,7 @@ export default function MembersManagementPage() {
     setIsActive(true);
     setCredentialResult(null);
     setResetTarget(null);
+    setDetailMember(null);
     setShowModal(true);
   };
 
@@ -73,7 +75,21 @@ export default function MembersManagementPage() {
     setIsActive(m.isActive);
     setCredentialResult(null);
     setResetTarget(null);
+    setDetailMember(null);
     setShowModal(true);
+  };
+
+  const openDetail = async (m: Member) => {
+    try {
+      const detail = await membersApi.get(m.id);
+      setDetailMember(detail);
+      setShowModal(true);
+      setResetTarget(null);
+      setEditId(null);
+      setCredentialResult(null);
+    } catch {
+      toast.error('Gagal memuat detail member');
+    }
   };
 
   const openReset = (m: Member) => {
@@ -82,6 +98,7 @@ export default function MembersManagementPage() {
     setResetEmail(m.email);
     setCredentialResult(null);
     setEditId(null);
+    setDetailMember(null);
   };
 
   const copyCredentials = async () => {
@@ -184,6 +201,7 @@ export default function MembersManagementPage() {
                   <td><span className="badge badge-neutral">{m._count.memberSessions}</span></td>
                   <td><span className={`badge ${m.isActive ? 'badge-success' : 'badge-danger'}`}>{m.isActive ? 'Aktif' : 'Nonaktif'}</span></td>
                   <td style={{ display: 'flex', gap: 6 }}>
+                    <button className="btn btn-ghost btn-icon btn-sm" title="Detail" onClick={() => openDetail(m)}><Eye size={13} /></button>
                     <button className="btn btn-ghost btn-icon btn-sm" title="Edit" onClick={() => openEdit(m)}><Edit2 size={13} /></button>
                     <button className="btn btn-ghost btn-icon btn-sm" title="Reset Akun" onClick={() => openReset(m)}><RefreshCw size={13} /></button>
                   </td>
@@ -218,6 +236,34 @@ export default function MembersManagementPage() {
                 <div className="card-footer" style={{ display: 'flex', gap: 8 }}>
                   <button className="btn btn-outline" style={{ flex: 1 }} onClick={copyCredentials}><Copy size={14} /> Salin Sekali</button>
                   <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => { setShowModal(false); setCredentialResult(null); setResetTarget(null); }}>Tutup</button>
+                </div>
+              </>
+            ) : detailMember ? (
+              <>
+                <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <h3 className="card-title">Detail Member</h3>
+                  <button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={16} /></button>
+                </div>
+                <div className="card-body" style={{ display: 'grid', gap: 8 }}>
+                  <div><strong>Nama:</strong> {detailMember.name}</div>
+                  <div><strong>No Member:</strong> {detailMember.memberNumber}</div>
+                  <div><strong>Email:</strong> {detailMember.email}</div>
+                  <div><strong>No HP:</strong> {detailMember.phoneNumber}</div>
+                  <div><strong>Dibuat:</strong> {new Date(detailMember.createdAt).toLocaleString('id-ID')}</div>
+                  <div><strong>Total sesi:</strong> {Array.isArray(detailMember.memberSessions) ? detailMember.memberSessions.length : 0}</div>
+                  <div style={{ maxHeight: 180, overflow: 'auto', borderTop: '1px solid var(--color-border-soft)', paddingTop: 10 }}>
+                    <strong>Riwayat sesi terakhir:</strong>
+                    <ul style={{ marginTop: 8, paddingLeft: 18 }}>
+                      {(detailMember.memberSessions || []).map((s: any) => (
+                        <li key={s.id} style={{ marginBottom: 6 }}>
+                          {new Date(s.startTime).toLocaleString('id-ID')} · {s.table?.name || '-'} · {s.status}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                <div className="card-footer" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button className="btn btn-primary" onClick={() => setShowModal(false)}>Tutup</button>
                 </div>
               </>
             ) : resetTarget ? (
