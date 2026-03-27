@@ -44,7 +44,7 @@ const HOME_MAP: Record<string, string> = {
   DEVELOPER: '/developer/dashboard',
   MANAGER:   '/manager/dashboard',
   CASHIER:   '/cashier/dashboard',
-  MEMBER:    '/member/dashboard',
+  MEMBER:    '/owner/dashboard',
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {

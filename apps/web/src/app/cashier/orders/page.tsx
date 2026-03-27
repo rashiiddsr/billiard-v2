@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ordersApi, api, menuApi, paymentsApi } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Plus, X, Check } from 'lucide-react';
+import { Plus, X, Check, Search } from 'lucide-react';
 import { formatRupiah } from '@/lib/utils';
 
 export default function CashierOrdersPage() {
@@ -15,6 +15,8 @@ export default function CashierOrdersPage() {
   const [standaloneOrderId, setStandaloneOrderId] = useState('');
   const [payMethod, setPayMethod] = useState('CASH');
   const [payAmount, setPayAmount] = useState('');
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('Semua');
 
   useEffect(() => {
     Promise.all([api.get('/billing/sessions/active'), menuApi.list({ isActive: true })])
@@ -34,6 +36,14 @@ export default function CashierOrdersPage() {
   const removeFromCart = (id: string) => setCart(c => c.filter(i => i.menuItemId !== id));
   const total = cart.reduce((s,i) => s+i.price*i.qty, 0);
   const standaloneChange = Math.max(0, Number(payAmount || 0) - total);
+  const categories = ['Semua', ...Array.from(new Set(menu.map((m) => String(m.category?.name || m.category || 'Lainnya'))))];
+  const filteredMenu = menu.filter((m) => {
+    const menuCategory = String(m.category?.name || m.category || 'Lainnya');
+    const keyword = `${m.name} ${m.sku || ''}`.toLowerCase();
+    const byCategory = category === 'Semua' || menuCategory === category;
+    const bySearch = !search.trim() || keyword.includes(search.trim().toLowerCase());
+    return byCategory && bySearch;
+  });
 
   const resetPaymentPopup = useCallback(() => {
     setShowPaymentPopup(false);
@@ -90,37 +100,84 @@ export default function CashierOrdersPage() {
 
   return (
     <div>
-      <div className="page-header"><div><h1 className="page-title">Order F&B</h1></div></div>
-      <div className="grid-2">
-        <div>
+      <div className="page-header"><div><h1 className="page-title">Pesanan F&B</h1></div></div>
+      <div className="grid-2" style={{ alignItems: 'start' }}>
+        <div className="card card-padded" style={{ minHeight: 640, display: 'flex', flexDirection: 'column' }}>
           <div className="form-group mb-4"><label className="form-label">Pilih Sesi Meja (opsional)</label>
-            <select className="form-select" value={selSession} onChange={e => setSelSession(e.target.value)}>
+            <select className="form-select" value={selSession} onChange={(e) => setSelSession(e.target.value)}>
               <option value="">-- Standalone (langsung bayar) --</option>
               {sessions.map(s => <option key={s.id} value={s.id}>{s.table?.name} — {s.member?.name||s.guestName||'Tamu'}</option>)}
             </select>
           </div>
-          <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
-            {menu.map(m => (
-              <div key={m.id} style={{ display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background:'var(--color-surface)',borderRadius:'var(--radius-md)',border:'1px solid var(--color-border)' }}>
-                <div style={{ flex:1 }}><div style={{ fontWeight:600,fontSize:13 }}>{m.name}</div><div style={{ fontSize:12,color:'var(--color-text-muted)' }}>{m.category}</div></div>
-                <div style={{ fontWeight:700,fontSize:13 }}>{formatRupiah(m.price)}</div>
-                <button className="btn btn-primary btn-sm" onClick={() => addToCart(m)}><Plus size={13} /></button>
-              </div>
+
+          <div className="form-group mb-3" style={{ marginBottom: 12 }}>
+            <label className="form-label">Cari Produk</label>
+            <div style={{ position: 'relative' }}>
+              <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+              <input
+                className="form-input"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari nama atau SKU..."
+                style={{ paddingLeft: 34 }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                className={`btn btn-sm ${category === cat ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => setCategory(cat)}
+              >
+                {cat}
+              </button>
             ))}
           </div>
+
+          <div style={{ flex: 1, overflowY: 'auto', paddingRight: 4 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 10 }}>
+              {filteredMenu.map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => addToCart(m)}
+                  style={{
+                    textAlign: 'left',
+                    background: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '12px 12px 10px',
+                    minHeight: 108,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 4 }}>{m.sku || 'SKU'}</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8, lineHeight: 1.25 }}>{m.name}</div>
+                  <div style={{ color: 'var(--color-success)', fontWeight: 800, fontSize: 16 }}>{formatRupiah(m.price)}</div>
+                </button>
+              ))}
+            </div>
+            {filteredMenu.length === 0 && (
+              <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: 24 }}>Menu tidak ditemukan.</p>
+            )}
+          </div>
         </div>
+
         <div>
-          <div className="card card-padded">
+          <div className="card card-padded" style={{ position: 'sticky', top: 10 }}>
             <h3 className="card-title mb-4">Pesanan</h3>
             {cart.length===0 ? <p style={{ color:'var(--color-text-muted)',fontSize:13,textAlign:'center',padding:24 }}>Belum ada item</p>
             : <>
-              {cart.map(i => (
-                <div key={i.menuItemId} style={{ display:'flex',alignItems:'center',gap:8,padding:'8px 0',borderBottom:'1px solid var(--color-border-soft)' }}>
-                  <div style={{ flex:1 }}><div style={{ fontWeight:600,fontSize:13 }}>{i.name}</div><div style={{ fontSize:12,color:'var(--color-text-muted)' }}>{i.qty}x {formatRupiah(i.price)}</div></div>
-                  <div style={{ fontWeight:700,fontSize:13 }}>{formatRupiah(i.price*i.qty)}</div>
-                  <button className="btn btn-ghost btn-icon btn-sm" onClick={() => removeFromCart(i.menuItemId)} style={{ color:'var(--color-danger)' }}><X size={13} /></button>
-                </div>
-              ))}
+              <div style={{ maxHeight: 420, overflowY: 'auto' }}>
+                {cart.map(i => (
+                  <div key={i.menuItemId} style={{ display:'flex',alignItems:'center',gap:8,padding:'8px 0',borderBottom:'1px solid var(--color-border-soft)' }}>
+                    <div style={{ flex:1 }}><div style={{ fontWeight:600,fontSize:13 }}>{i.name}</div><div style={{ fontSize:12,color:'var(--color-text-muted)' }}>{i.qty}x {formatRupiah(i.price)}</div></div>
+                    <div style={{ fontWeight:700,fontSize:13 }}>{formatRupiah(i.price*i.qty)}</div>
+                    <button className="btn btn-ghost btn-icon btn-sm" onClick={() => removeFromCart(i.menuItemId)} style={{ color:'var(--color-danger)' }}><X size={13} /></button>
+                  </div>
+                ))}
+              </div>
               <div className="divider" />
               <div style={{ display:'flex',justifyContent:'space-between',fontWeight:700,fontSize:15,marginBottom:16 }}>
                 <span>Total</span><span>{formatRupiah(total)}</span>
