@@ -113,11 +113,36 @@ const navConfig: Record<string, NavGroup[]> = {
 
   MEMBER: [
     {
-      label: 'Akun Saya',
+      label: 'Utama',
       items: [
-        { label: 'Dashboard', href: '/member/dashboard', icon: LayoutDashboard },
-        { label: 'Riwayat Main', href: '/member/history', icon: ScrollText },
-        { label: 'Profil', href: '/member/profile', icon: User },
+        { label: 'Dashboard', href: '/owner/dashboard', icon: LayoutDashboard },
+        { label: 'Meja Billiard', href: '/owner/tables', icon: ClipboardList },
+        { label: 'Billing Aktif', href: '/owner/billing', icon: Timer },
+        { label: 'Transaksi', href: '/owner/transactions', icon: CreditCard },
+        { label: 'Riwayat Sesi', href: '/owner/history', icon: ScrollText },
+      ],
+    },
+    {
+      label: 'Bisnis',
+      items: [
+        { label: 'Keuangan', href: '/owner/finance', icon: BarChart3 },
+        { label: 'Pengeluaran', href: '/owner/expenses', icon: Wallet },
+        { label: 'Paket', href: '/owner/packages', icon: Package },
+        { label: 'Menu', href: '/owner/menu', icon: UtensilsCrossed },
+        { label: 'Kategori Menu', href: '/owner/menu-categories', icon: ListOrdered },
+        { label: 'Stok', href: '/owner/stock', icon: Archive },
+      ],
+    },
+    {
+      label: 'SDM & Sistem',
+      items: [
+        { label: 'Member', href: '/owner/members', icon: Users },
+        { label: 'Pengguna', href: '/owner/users', icon: UserCheck },
+        { label: 'Absensi', href: '/owner/attendance', icon: CalendarCheck },
+        { label: 'Shift Kerja', href: '/owner/shifts', icon: Clock },
+        { label: 'Audit Log', href: '/owner/audit', icon: ScrollText },
+        { label: 'Perusahaan', href: '/owner/company', icon: Building2 },
+        { label: 'Display TV', href: '/owner/waiting-display', icon: MonitorSmartphone },
       ],
     },
   ],

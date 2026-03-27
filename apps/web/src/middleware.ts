@@ -11,7 +11,7 @@ const ROLE_PATHS: Record<string, string[]> = {
   DEVELOPER: ['/developer', '/attendance'],
   MANAGER:   ['/manager', '/attendance'],
   CASHIER:   ['/cashier', '/attendance'],
-  MEMBER:    ['/member'],
+  MEMBER:    ['/owner', '/member', '/attendance'],
 };
 
 function isDocumentRequest(request: NextRequest) {
@@ -67,7 +67,7 @@ export function middleware(request: NextRequest) {
         DEVELOPER: '/developer/dashboard',
         MANAGER:   '/manager/dashboard',
         CASHIER:   '/cashier/dashboard',
-        MEMBER:    '/member/dashboard',
+        MEMBER:    '/owner/dashboard',
       };
       return NextResponse.redirect(new URL(homeMap[decoded.role] || '/login', request.url));
     }
