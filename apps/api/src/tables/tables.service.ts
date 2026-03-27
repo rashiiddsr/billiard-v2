@@ -14,7 +14,7 @@ import {
   IsString, IsNumber, IsOptional, IsBoolean, Min,
 } from 'class-validator';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { Role, SessionStatus, TableStatus } from '@prisma/client';
+import { SessionStatus, TableStatus } from '@prisma/client';
 
 export class CreateTableDto {
   @IsString() name: string;
@@ -89,7 +89,7 @@ export class TablesService {
     });
   }
 
-  async update(id: string, dto: UpdateTableDto, actorRole: Role) {
+  async update(id: string, dto: UpdateTableDto) {
     const existing = await this.findOne(id);
 
     const hasActiveBilling = existing.billingSessions.some(
@@ -97,14 +97,6 @@ export class TablesService {
     );
     if (hasActiveBilling) {
       throw new BadRequestException('Meja tidak bisa diubah saat billing berjalan');
-    }
-
-    // OWNER hanya bisa ubah hourlyRate dan isActive
-    if (
-      actorRole === Role.OWNER &&
-      (dto.name !== undefined || dto.description !== undefined)
-    ) {
-      throw new BadRequestException('Owner hanya bisa mengubah tarif dan status aktif meja');
     }
 
     if (dto.name !== undefined) {
@@ -134,8 +126,8 @@ export class TablesService {
     return { message: 'Meja berhasil dihapus' };
   }
 
-  // Manual toggle status oleh DEVELOPER/OWNER tanpa IoT
-  async setStatus(id: string, status: TableStatus, actorRole: Role) {
+  // Manual toggle status oleh OWNER tanpa IoT
+  async setStatus(id: string, status: TableStatus) {
     const table = await this.prisma.table.findUnique({
       where: { id },
       include: { billingSessions: { where: { status: 'ACTIVE' }, take: 1 } },

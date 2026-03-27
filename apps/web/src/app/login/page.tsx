@@ -7,10 +7,9 @@ import { Eye, EyeOff, Loader2, LogIn } from 'lucide-react';
 
 const HOME_MAP: Record<string, string> = {
   OWNER:     '/owner/dashboard',
-  DEVELOPER: '/developer/dashboard',
   MANAGER:   '/manager/dashboard',
   CASHIER:   '/cashier/dashboard',
-  MEMBER:    '/member/dashboard',
+  MEMBER:    '/owner/dashboard',
 };
 
 export default function LoginPage() {

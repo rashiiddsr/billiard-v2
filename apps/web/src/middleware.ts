@@ -7,11 +7,10 @@ const PUBLIC_PATHS = ['/login', '/attendance', '/display'];
 
 // Map role → prefix path yang diizinkan
 const ROLE_PATHS: Record<string, string[]> = {
-  OWNER:     ['/owner', '/attendance'],
-  DEVELOPER: ['/developer', '/attendance'],
+  OWNER:     ['/owner'],
   MANAGER:   ['/manager', '/attendance'],
   CASHIER:   ['/cashier', '/attendance'],
-  MEMBER:    ['/owner', '/member', '/attendance'],
+  MEMBER:    ['/owner', '/member'],
 };
 
 function isDocumentRequest(request: NextRequest) {
@@ -64,7 +63,6 @@ export function middleware(request: NextRequest) {
       // Redirect ke home role masing-masing
       const homeMap: Record<string, string> = {
         OWNER:     '/owner/dashboard',
-        DEVELOPER: '/developer/dashboard',
         MANAGER:   '/manager/dashboard',
         CASHIER:   '/cashier/dashboard',
         MEMBER:    '/owner/dashboard',

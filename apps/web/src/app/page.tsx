@@ -6,10 +6,9 @@ import { useAuth } from '@/lib/auth';
 
 const HOME_MAP: Record<string, string> = {
   OWNER:     '/owner/dashboard',
-  DEVELOPER: '/developer/dashboard',
   MANAGER:   '/manager/dashboard',
   CASHIER:   '/cashier/dashboard',
-  MEMBER:    '/member/dashboard',
+  MEMBER:    '/owner/dashboard',
 };
 
 export default function RootPage() {

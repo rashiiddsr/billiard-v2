@@ -14,7 +14,6 @@ interface Props {
 
 const HOME_MAP: Record<string, string> = {
   OWNER: '/owner/dashboard',
-  DEVELOPER: '/developer/dashboard',
   MANAGER: '/manager/dashboard',
   CASHIER: '/cashier/dashboard',
   MEMBER: '/owner/dashboard',
@@ -22,7 +21,6 @@ const HOME_MAP: Record<string, string> = {
 
 const roleLabels: Record<string, string> = {
   OWNER: 'Owner',
-  DEVELOPER: 'Developer',
   MANAGER: 'Manager',
   CASHIER: 'Kasir',
   MEMBER: 'Member',

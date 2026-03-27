@@ -58,16 +58,6 @@ const navConfig: Record<string, NavGroup[]> = {
     },
   ],
 
-  DEVELOPER: [
-    {
-      label: 'Utama',
-      items: [
-        { label: 'Dashboard', href: '/developer/dashboard', icon: LayoutDashboard },
-        { label: 'Kelola Meja', href: '/developer/tables', icon: ClipboardList },
-      ],
-    },
-  ],
-
   MANAGER: [
     {
       label: 'Utama',
@@ -155,6 +145,10 @@ export default function Sidebar() {
   if (!user) return null;
 
   const groups = navConfig[user.role] || [];
+  const profileHref = user.role === 'MEMBER'
+    ? '/owner/profile'
+    : `/${user.role.toLowerCase()}/profile`;
+  const isProfileActive = pathname === profileHref || pathname.startsWith(`${profileHref}/`);
 
   return (
     <aside className="layout-sidebar">
@@ -185,7 +179,7 @@ export default function Sidebar() {
           </div>
         ))}
 
-        {['CASHIER', 'MANAGER', 'OWNER', 'DEVELOPER'].includes(user.role) && (
+        {['CASHIER', 'MANAGER'].includes(user.role) && (
           <div className="sidebar-section">
             <div className="sidebar-section-label">Absensi</div>
             <Link
@@ -201,8 +195,8 @@ export default function Sidebar() {
 
       <div className="sidebar-footer">
         <Link
-          href={`/${user.role.toLowerCase()}/profile`}
-          className="sidebar-item"
+          href={profileHref}
+          className={`sidebar-item ${isProfileActive ? 'active' : ''}`}
           style={{ marginTop: 4 }}
         >
           <User size={16} />

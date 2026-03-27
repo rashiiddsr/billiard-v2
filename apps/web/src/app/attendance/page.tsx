@@ -165,6 +165,26 @@ export default function AttendancePage() {
     );
   }
 
+  if (!['MANAGER', 'CASHIER'].includes(user.role)) {
+    return (
+      <div className="attendance-page">
+        <div className="attendance-card">
+          <div className="attendance-logo">🎱 Billiard POS</div>
+          <p style={{ color: 'var(--color-text-muted)', marginBottom: 20 }}>
+            Absensi hanya tersedia untuk akun Manager dan Kasir.
+          </p>
+          <a
+            href={user.role === 'OWNER' || user.role === 'MEMBER' ? '/owner/dashboard' : '/login'}
+            className="btn btn-primary"
+            style={{ width: '100%', justifyContent: 'center' }}
+          >
+            Kembali ke Dashboard
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   const initials = user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
 
   return (
