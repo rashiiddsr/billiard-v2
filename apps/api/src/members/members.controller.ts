@@ -3,7 +3,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { IsString, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsEmail } from 'class-validator';
 import { MembersService } from './members.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -18,6 +18,10 @@ class UpdateMemberDto {
   @IsOptional() @IsString() name?: string;
   @IsOptional() @IsString() phoneNumber?: string;
   @IsOptional() @IsBoolean() isActive?: boolean;
+}
+
+class ResetMemberCredentialsDto {
+  @IsOptional() @IsEmail() email?: string;
 }
 
 @ApiTags('Members')
@@ -65,6 +69,16 @@ export class MembersController {
   @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any, 'MEMBER' as any)
   getMember(@Param('id') id: string, @CurrentUser() user: any) {
     return this.membersService.getMember(id, user.id, user.role);
+  }
+
+  @Patch(':id/reset-credentials')
+  @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any)
+  resetCredentials(
+    @Param('id') id: string,
+    @Body() dto: ResetMemberCredentialsDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.membersService.resetCredentials(id, user.id, dto.email);
   }
 
   @Patch(':id')

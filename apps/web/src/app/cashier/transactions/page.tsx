@@ -1,3 +1,3 @@
 'use client';
-import SessionsListPage from '@/components/shared/SessionsListPage';
-export default function Page() { return <SessionsListPage title="Transaksi Saya" subtitle="Riwayat billing hari ini" />; }
+import TransactionsPage from '@/components/shared/TransactionsPage';
+export default function Page() { return <TransactionsPage scope="cashier" />; }

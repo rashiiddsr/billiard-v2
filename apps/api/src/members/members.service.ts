@@ -41,12 +41,30 @@ export class MembersService {
     return crypto.randomBytes(4).toString('hex').toUpperCase(); // 8 hex chars
   }
 
+  private async ensureUniquePhoneNumber(phoneNumber: string, excludeUserId?: string) {
+    const existing = await this.prisma.user.findFirst({
+      where: {
+        role: Role.MEMBER,
+        phoneNumber,
+        ...(excludeUserId ? { id: { not: excludeUserId } } : {}),
+      },
+      select: { id: true },
+    });
+
+    if (existing) {
+      throw new ConflictException('Nomor HP member sudah digunakan');
+    }
+  }
+
   // ─── Buat member baru ─────────────────────────────────────────────────────
 
   async createMember(
     dto: { name: string; phoneNumber: string },
     actorId: string,
   ) {
+    const normalizedPhone = dto.phoneNumber.trim();
+    await this.ensureUniquePhoneNumber(normalizedPhone);
+
     const memberNumber = await this.generateMemberNumber();
     const email = `member-${memberNumber.toLowerCase().replace('-', '')}@internal.vluxe.local`;
 
@@ -61,7 +79,7 @@ export class MembersService {
       data: {
         name: dto.name,
         email,
-        phoneNumber: dto.phoneNumber,
+        phoneNumber: normalizedPhone,
         passwordHash,
         role: Role.MEMBER,
         memberNumber,
@@ -187,9 +205,13 @@ export class MembersService {
     const member = await this.prisma.user.findUnique({ where: { id } });
     if (!member || member.role !== Role.MEMBER) throw new NotFoundException('Member tidak ditemukan');
 
+    if (dto.phoneNumber && dto.phoneNumber.trim() !== member.phoneNumber) {
+      await this.ensureUniquePhoneNumber(dto.phoneNumber.trim(), id);
+    }
+
     const updated = await this.prisma.user.update({
       where: { id },
-      data: dto,
+      data: { ...dto, ...(dto.phoneNumber ? { phoneNumber: dto.phoneNumber.trim() } : {}) },
       select: {
         id: true, name: true, phoneNumber: true,
         memberNumber: true, isActive: true, updatedAt: true,
@@ -206,6 +228,47 @@ export class MembersService {
     });
 
     return updated;
+  }
+
+
+  async resetCredentials(memberId: string, actorId: string, customEmail?: string) {
+    const member = await this.prisma.user.findUnique({ where: { id: memberId } });
+    if (!member || member.role !== Role.MEMBER) {
+      throw new NotFoundException('Member tidak ditemukan');
+    }
+
+    const nextEmail = customEmail?.trim().toLowerCase() || member.email;
+    if (nextEmail !== member.email) {
+      const exists = await this.prisma.user.findUnique({ where: { email: nextEmail } });
+      if (exists && exists.id !== memberId) {
+        throw new ConflictException('Email sudah digunakan user lain');
+      }
+    }
+
+    const rawPassword = this.generateRawPassword();
+    const passwordHash = await bcrypt.hash(rawPassword, 10);
+
+    const updated = await this.prisma.user.update({
+      where: { id: memberId },
+      data: {
+        email: nextEmail,
+        passwordHash,
+      },
+      select: { id: true, name: true, email: true, memberNumber: true },
+    });
+
+    await this.audit.log({
+      userId: actorId,
+      action: AuditAction.UPDATE,
+      entity: 'MemberCredentials',
+      entityId: memberId,
+      afterData: { email: updated.email },
+    });
+
+    return {
+      member: updated,
+      credentials: { email: updated.email, password: rawPassword },
+    };
   }
 
   // ─── Profil member (self) ─────────────────────────────────────────────────
