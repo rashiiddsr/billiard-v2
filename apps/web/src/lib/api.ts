@@ -152,10 +152,31 @@ export const membersApi = {
   get:         (id: string) => api.get(`/members/${id}`).then((r) => r.data),
   create:      (data: { name: string; phoneNumber: string }) =>
     api.post('/members', data).then((r) => r.data),
-  update:      (id: string, data: any) =>
-    api.patch(`/members/${id}`, data).then((r) => r.data),
-  resetCredentials: (id: string, data?: { email?: string }) =>
-    api.patch(`/members/${id}/reset-credentials`, data || {}).then((r) => r.data),
+  update:      async (id: string, data: any) => {
+    try {
+      const res = await api.patch(`/members/${id}`, data);
+      return res.data;
+    } catch (err: any) {
+      if (err?.response?.status === 403) {
+        return api.patch(`/members/${id}/cashier-update`, data).then((r) => r.data);
+      }
+      throw err;
+    }
+  },
+  resetCredentials: async (id: string, data?: { email?: string }) => {
+    try {
+      const res = await api.patch(`/members/${id}/reset-credentials`, data || {});
+      return res.data;
+    } catch (err: any) {
+      if (err?.response?.status === 404 || String(err?.response?.data || '').includes('Cannot PATCH')) {
+        return api.post(`/members/${id}/reset-credentials`, data || {}).then((r) => r.data);
+      }
+      if (err?.response?.status === 403) {
+        return api.patch(`/members/${id}/cashier-reset`, data || {}).then((r) => r.data);
+      }
+      throw err;
+    }
+  },
   search:      (q: string) =>
     api.get('/members/search', { params: { q } }).then((r) => r.data),
   myProfile:   () => api.get('/members/profile/me').then((r) => r.data),

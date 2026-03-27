@@ -144,6 +144,17 @@ small { font-size: 12px; color: var(--color-text-muted); }
   border-bottom: 1px solid var(--sidebar-border);
 }
 
+
+.sidebar-logo-image {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid var(--sidebar-border);
+  margin-bottom: 10px;
+  background: white;
+}
+
 .sidebar-logo-title {
   font-family: 'Playfair Display', serif;
   font-size: 18px;
@@ -870,7 +881,7 @@ table.data-table tbody:empty::before {
 /* ─── Waiting List Display (TV) ───────────────────────────────────────────── */
 .waiting-display-shell {
   min-height: 100vh;
-  background: radial-gradient(circle at top, #4b2406 0%, #1c0f07 45%, #0f0905 100%);
+  background: radial-gradient(circle at 15% 10%, #8b5cf6 0%, rgba(139,92,246,0.12) 28%, transparent 50%), radial-gradient(circle at 85% 10%, #22d3ee 0%, rgba(34,211,238,0.16) 30%, transparent 52%), linear-gradient(145deg, #2a1006 0%, #1a0a1f 48%, #07131d 100%);
   color: #fff7ed;
   padding: 24px;
   display: flex;
@@ -886,8 +897,15 @@ table.data-table tbody:empty::before {
 }
 
 .brand-block { display: flex; align-items: center; gap: 14px; }
-.brand-block h1 { color: #fde68a; letter-spacing: 1px; font-size: 34px; }
-.brand-block p { color: #fef3c7; font-size: 16px; }
+.brand-block h1 { color: #fef08a; letter-spacing: 1px; font-size: 36px; text-shadow: 0 6px 20px rgba(0,0,0,.35); }
+.brand-block p { color: #dbeafe; font-size: 16px; }
+ .display-welcome {
+  color: #a7f3d0;
+  font-size: 13px;
+  margin-top: 4px;
+  display: inline-block;
+}
+
 .brand-logo {
   width: 56px;
   height: 56px;
@@ -924,7 +942,7 @@ table.data-table tbody:empty::before {
   min-height: 0;
 }
 
-.called-column { border-color: rgba(196, 181, 253, 0.45); }
+.called-column { border-color: rgba(196, 181, 253, 0.7); background: linear-gradient(150deg, rgba(99,102,241,.26), rgba(236,72,153,.18)); }
 
 .column-head {
   display: flex;
@@ -943,7 +961,7 @@ table.data-table tbody:empty::before {
 }
 
 .display-card {
-  background: rgba(255, 255, 255, 0.09);
+  background: linear-gradient(150deg, rgba(255,255,255,.17), rgba(255,255,255,.05));
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 14px;
   padding: 14px;
@@ -955,7 +973,7 @@ table.data-table tbody:empty::before {
   font-size: 12px;
   padding: 3px 8px;
   border-radius: 999px;
-  background: #f59e0b;
+  background: linear-gradient(90deg, #f59e0b, #f97316);
   color: #1c1917;
   font-weight: 700;
 }
@@ -992,6 +1010,7 @@ table.data-table tbody:empty::before {
   align-items: center;
 }
 
+
 .display-marquee-track {
   white-space: nowrap;
   font-size: 22px;
@@ -1013,7 +1032,7 @@ table.data-table tbody:empty::before {
 /* ─── Enhancements: Waiting Display media + modal ─────────────────────────── */
 .waiting-right-column {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) 210px;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   gap: 14px;
   min-height: 0;
 }
@@ -1038,7 +1057,7 @@ table.data-table tbody:empty::before {
 
 .display-media-image {
   width: 100%;
-  height: 155px;
+  height: calc(100% - 30px);
   object-fit: cover;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.3);

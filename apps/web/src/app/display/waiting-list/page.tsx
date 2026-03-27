@@ -49,11 +49,13 @@ function WaitingListDisplayContent() {
   const [hideFullscreenButton, setHideFullscreenButton] = useState(false);
   const calledIdsRef = useRef<Set<string>>(new Set());
 
-  const title = searchParams.get('title') || 'WAITING LIST';
-  const subtitle = searchParams.get('subtitle') || 'Antrian Billiard Hari Ini';
+  const title = 'WAITING LIST';
+  const subtitle = 'Antrian Billiard Hari Ini';
   const marquee = searchParams.get('marquee') || FALLBACK_MARQUEE;
   const refreshMs = Number(searchParams.get('refreshMs') || '10000');
   const modalDurationMs = Number(searchParams.get('modalMs') || '7000');
+  const openHour = searchParams.get('openHour') || '';
+  const closeHour = searchParams.get('closeHour') || '';
 
   const mediaItems = useMemo(() => {
     const mediaFromList = (searchParams.get('media') || '')
@@ -168,7 +170,8 @@ function WaitingListDisplayContent() {
           {!!profile?.logoUrl && <img src={resolveAssetUrl(profile.logoUrl)} alt="Logo" className="brand-logo" />}
           <div>
             <h1>{title}</h1>
-            <p>{subtitle || profile?.name || 'Billiard Lounge'}</p>
+            <p>{profile?.name || subtitle || 'Billiard Lounge'} {openHour && closeHour ? `· ${openHour} - ${closeHour}` : ''}</p>
+            <small className="display-welcome">Selamat datang! Nikmati permainan terbaik kami 🎱</small>
           </div>
         </div>
 
@@ -220,7 +223,7 @@ function WaitingListDisplayContent() {
               <img src={mediaItems[activeMediaIndex]} alt="Media display" className="display-media-image" />
             ) : (
               <div className="display-media-empty">
-                Tambahkan media via URL setting owner untuk membuat display lebih hidup.
+                Tambahkan media dari menu owner agar promo tampil menarik.
               </div>
             )}
           </div>
