@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { jwtDecode } from 'jwt-decode';
 
 // Route yang tidak perlu auth
-const PUBLIC_PATHS = ['/login', '/attendance'];
+const PUBLIC_PATHS = ['/login', '/attendance', '/display'];
 
 // Map role → prefix path yang diizinkan
 const ROLE_PATHS: Record<string, string[]> = {
