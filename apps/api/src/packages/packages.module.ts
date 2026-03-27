@@ -156,7 +156,7 @@ export class PackagesService {
     const packagePrice = new Prisma.Decimal(dto.price.toString()).toDecimalPlaces(2);
     if (packagePrice.greaterThan(originalTotal)) {
       throw new BadRequestException(
-        `Harga paket harus ≤ nilai per paket terpisah (${originalTotal.toFixed(0)}).`,
+        `Harga paket tidak boleh lebih mahal dari total normal (${originalTotal.toFixed(0)}).`,
       );
     }
 

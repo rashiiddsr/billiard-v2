@@ -314,7 +314,7 @@ export class UsersController {
   }
 
   @Get('cashiers')
-  @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any)
+  @Roles('OWNER' as any, 'MANAGER' as any)
   findCashiers() {
     return this.usersService.findCashiers();
   }
