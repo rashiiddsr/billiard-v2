@@ -69,7 +69,7 @@ export default function CompanyPage() {
   };
 
   return (
-    <div>
+    <div style={{ maxWidth: 1000, margin: '0 auto' }}>
       <div className="page-header"><div><h1 className="page-title">Data Perusahaan</h1></div></div>
       <div className="card">
         <div className="card-header" style={{ paddingBottom: 14 }}><h3 className="card-title"><Building2 size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 8 }} />Informasi Bisnis</h3></div>
