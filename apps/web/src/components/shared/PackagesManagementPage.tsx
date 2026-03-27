@@ -150,6 +150,9 @@ export default function PackagesManagementPage() {
     if (!form.targetHourlyRate) return toast.error('Target harga meja wajib dipilih');
     if (!form.durationMinutes || Number(form.durationMinutes) < 1) return toast.error('Durasi wajib diisi');
     if (!form.price || Number(form.price) < 0) return toast.error('Harga paket wajib diisi');
+    if (Number(form.price) > bundleNormalTotal) {
+      return toast.error('Harga paket harus ≤ nilai per paket terpisah');
+    }
 
     const cleanedMenuItems = form.items
       .filter((item) => item.menuItemId)

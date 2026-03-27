@@ -9,9 +9,13 @@ interface Session { id: string; startTime: string; actualEndTime: string | null;
 const statusCls: Record<string, string> = { ACTIVE: 'badge-warning', COMPLETED: 'badge-success', CANCELLED: 'badge-neutral' };
 const statusLabel: Record<string, string> = { ACTIVE: 'Aktif', COMPLETED: 'Selesai', CANCELLED: 'Dibatalkan' };
 
-interface Props { title: string; subtitle?: string; }
+interface Props {
+  title: string;
+  subtitle?: string;
+  unpaidOnly?: boolean;
+}
 
-export default function SessionsListPage({ title, subtitle }: Props) {
+export default function SessionsListPage({ title, subtitle, unpaidOnly = false }: Props) {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [total, setTotal] = useState(0); const [page, setPage] = useState(1); const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState(''); const [startDate, setStartDate] = useState(''); const [endDate, setEndDate] = useState('');
@@ -23,10 +27,17 @@ export default function SessionsListPage({ title, subtitle }: Props) {
       if (filterStatus) params.status = filterStatus;
       if (startDate) params.startDate = startDate;
       if (endDate) params.endDate = endDate + 'T23:59:59';
+      if (unpaidOnly) params.unpaidOnly = true;
       const res = await billingApi.getSessions(params);
-      setSessions(asArray(res)); setTotal(Number(res?.total || res?.meta?.total || 0));
+      const rows = asArray<Session>(res);
+      const normalizedRows = unpaidOnly
+        ? rows.filter((session) =>
+          ['ACTIVE', 'COMPLETED'].includes(session.status) && (!session.payments || session.payments.length === 0))
+        : rows;
+      setSessions(normalizedRows);
+      setTotal(unpaidOnly ? normalizedRows.length : Number(res?.total || res?.meta?.total || 0));
     } catch {} finally { setLoading(false); }
-  }, [page, filterStatus, startDate, endDate]);
+  }, [page, filterStatus, startDate, endDate, unpaidOnly]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -50,7 +61,10 @@ export default function SessionsListPage({ title, subtitle }: Props) {
       <div className="card card-padded mb-4" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
         <Filter size={14} style={{ color: 'var(--color-text-muted)' }} />
         <select className="form-select" value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setPage(1); }} style={{ width: 'auto', minWidth: 130 }}>
-          <option value="">Semua Status</option><option value="ACTIVE">Aktif</option><option value="COMPLETED">Selesai</option><option value="CANCELLED">Dibatalkan</option>
+          <option value="">Semua Status</option>
+          <option value="ACTIVE">Aktif</option>
+          <option value="COMPLETED">Selesai</option>
+          {!unpaidOnly && <option value="CANCELLED">Dibatalkan</option>}
         </select>
         <input type="date" className="form-input" value={startDate} onChange={e => { setStartDate(e.target.value); setPage(1); }} style={{ width: 'auto' }} />
         <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>s/d</span>
