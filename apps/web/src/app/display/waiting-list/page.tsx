@@ -44,6 +44,10 @@ function WaitingListDisplayContent() {
   const [entries, setEntries] = useState<WaitingEntry[]>([]);
   const [profile, setProfile] = useState<CompanyProfile | null>(null);
   const [now, setNow] = useState<Date | null>(null);
+  const [companyHours, setCompanyHours] = useState<{ openHour: string; closeHour: string }>({
+    openHour: '10:00',
+    closeHour: '23:00',
+  });
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [calledModalEntry, setCalledModalEntry] = useState<WaitingEntry | null>(null);
   const [showCalledModal, setShowCalledModal] = useState(false);
@@ -97,6 +101,19 @@ function WaitingListDisplayContent() {
   useEffect(() => {
     setIsMounted(true);
     setNow(new Date());
+
+    try {
+      const raw = localStorage.getItem('company-operational-hours');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      const open = typeof parsed?.openHour === 'string' ? parsed.openHour : '';
+      const close = typeof parsed?.closeHour === 'string' ? parsed.closeHour : '';
+      if (open && close) {
+        setCompanyHours({ openHour: open, closeHour: close });
+      }
+    } catch {
+      // noop
+    }
   }, []);
 
   useEffect(() => {
