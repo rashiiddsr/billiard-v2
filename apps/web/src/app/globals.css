@@ -144,17 +144,6 @@ small { font-size: 12px; color: var(--color-text-muted); }
   border-bottom: 1px solid var(--sidebar-border);
 }
 
-
-.sidebar-logo-image {
-  width: 46px;
-  height: 46px;
-  border-radius: 10px;
-  object-fit: cover;
-  border: 1px solid var(--sidebar-border);
-  margin-bottom: 10px;
-  background: white;
-}
-
 .sidebar-logo-title {
   font-family: 'Playfair Display', serif;
   font-size: 18px;
@@ -1003,19 +992,6 @@ table.data-table tbody:empty::before {
   align-items: center;
 }
 
-
-.display-link-pill {
-  margin-left: auto;
-  margin-right: 14px;
-  background: rgba(255,255,255,.15);
-  border: 1px solid rgba(253,230,138,.5);
-  color: #fde68a;
-  border-radius: 999px;
-  padding: 6px 12px;
-  text-decoration: none;
-  font-weight: 600;
-}
-
 .display-marquee-track {
   white-space: nowrap;
   font-size: 22px;
@@ -1037,7 +1013,7 @@ table.data-table tbody:empty::before {
 /* ─── Enhancements: Waiting Display media + modal ─────────────────────────── */
 .waiting-right-column {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) 210px;
   gap: 14px;
   min-height: 0;
 }
@@ -1062,7 +1038,7 @@ table.data-table tbody:empty::before {
 
 .display-media-image {
   width: 100%;
-  height: calc(100% - 30px);
+  height: 155px;
   object-fit: cover;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.3);

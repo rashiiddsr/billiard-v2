@@ -3,13 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { useEffect, useMemo, useState } from 'react';
-import { companyApi } from '@/lib/api';
 import {
   LayoutDashboard, Users, ClipboardList, CreditCard, Package,
-  UtensilsCrossed, Wallet, User,
+  UtensilsCrossed, BarChart3, Wallet, User,
   Building2, ScrollText, Timer, ListOrdered, UserCheck,
-  CalendarCheck, ChevronRight, MonitorSmartphone, BarChart3
+  CalendarCheck, Clock, ChevronRight, MonitorSmartphone
 } from 'lucide-react';
 
 interface NavItem {
@@ -30,12 +28,15 @@ const navConfig: Record<string, NavGroup[]> = {
       items: [
         { label: 'Dashboard', href: '/owner/dashboard', icon: LayoutDashboard },
         { label: 'Meja Billiard', href: '/owner/tables', icon: ClipboardList },
-        { label: 'Laporan & Transaksi', href: '/owner/reports-transactions', icon: BarChart3 },
+        { label: 'Billing Aktif', href: '/owner/billing', icon: Timer },
+        { label: 'Transaksi', href: '/owner/transactions', icon: CreditCard },
+        { label: 'Riwayat Sesi', href: '/owner/history', icon: ScrollText },
       ],
     },
     {
       label: 'Bisnis',
       items: [
+        { label: 'Keuangan', href: '/owner/finance', icon: BarChart3 },
         { label: 'Pengeluaran', href: '/owner/expenses', icon: Wallet },
         { label: 'Paket', href: '/owner/packages', icon: Package },
         { label: 'Menu', href: '/owner/menu', icon: UtensilsCrossed },
@@ -47,7 +48,8 @@ const navConfig: Record<string, NavGroup[]> = {
       items: [
         { label: 'Member', href: '/owner/members', icon: Users },
         { label: 'Pengguna', href: '/owner/users', icon: UserCheck },
-        { label: 'Absensi & Shift Kerja', href: '/owner/attendance', icon: CalendarCheck },
+        { label: 'Absensi', href: '/owner/attendance', icon: CalendarCheck },
+        { label: 'Shift Kerja', href: '/owner/shifts', icon: Clock },
         { label: 'Audit Log', href: '/owner/audit', icon: ScrollText },
         { label: 'Perusahaan', href: '/owner/company', icon: Building2 },
         { label: 'Display TV', href: '/owner/waiting-display', icon: MonitorSmartphone },
@@ -103,29 +105,40 @@ const navConfig: Record<string, NavGroup[]> = {
       items: [
         { label: 'Dashboard', href: '/owner/dashboard', icon: LayoutDashboard },
         { label: 'Meja Billiard', href: '/owner/tables', icon: ClipboardList },
+        { label: 'Billing Aktif', href: '/owner/billing', icon: Timer },
+        { label: 'Transaksi', href: '/owner/transactions', icon: CreditCard },
+        { label: 'Riwayat Sesi', href: '/owner/history', icon: ScrollText },
+      ],
+    },
+    {
+      label: 'Bisnis',
+      items: [
+        { label: 'Keuangan', href: '/owner/finance', icon: BarChart3 },
+        { label: 'Pengeluaran', href: '/owner/expenses', icon: Wallet },
+        { label: 'Paket', href: '/owner/packages', icon: Package },
+        { label: 'Menu', href: '/owner/menu', icon: UtensilsCrossed },
+        { label: 'Kategori Menu', href: '/owner/menu-categories', icon: ListOrdered },
+      ],
+    },
+    {
+      label: 'SDM & Sistem',
+      items: [
+        { label: 'Member', href: '/owner/members', icon: Users },
+        { label: 'Pengguna', href: '/owner/users', icon: UserCheck },
+        { label: 'Absensi', href: '/owner/attendance', icon: CalendarCheck },
+        { label: 'Shift Kerja', href: '/owner/shifts', icon: Clock },
+        { label: 'Audit Log', href: '/owner/audit', icon: ScrollText },
+        { label: 'Perusahaan', href: '/owner/company', icon: Building2 },
+        { label: 'Display TV', href: '/owner/waiting-display', icon: MonitorSmartphone },
       ],
     },
   ],
 };
 
-function resolveAssetUrl(url?: string | null) {
-  if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
-  const origin = apiUrl.replace('/api/v1', '');
-  return `${origin}${url.startsWith('/') ? '' : '/'}${url}`;
-}
-
 export default function Sidebar() {
   const { user } = useAuth();
   const pathname = usePathname();
-  const [brand, setBrand] = useState<{ name?: string; logoUrl?: string | null } | null>(null);
 
-  useEffect(() => {
-    companyApi.getPublicProfile().then(setBrand).catch(() => setBrand(null));
-  }, []);
-
-  const logoSrc = useMemo(() => resolveAssetUrl(brand?.logoUrl), [brand?.logoUrl]);
   if (!user) return null;
 
   const groups = navConfig[user.role] || [];
@@ -137,8 +150,7 @@ export default function Sidebar() {
   return (
     <aside className="layout-sidebar">
       <div className="sidebar-logo">
-        {logoSrc ? <img src={logoSrc} alt="Logo" className="sidebar-logo-image" /> : null}
-        <div className="sidebar-logo-title">{brand?.name || 'Billiard POS'}</div>
+        <div className="sidebar-logo-title">🎱 Billiard POS</div>
         <div className="sidebar-logo-sub">Premium Management System</div>
       </div>
 

@@ -81,17 +81,6 @@ export class MembersController {
     return this.membersService.resetCredentials(id, user.id, dto.email);
   }
 
-
-  @Post(':id/reset-credentials')
-  @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any)
-  resetCredentialsViaPost(
-    @Param('id') id: string,
-    @Body() dto: ResetMemberCredentialsDto,
-    @CurrentUser() user: any,
-  ) {
-    return this.membersService.resetCredentials(id, user.id, dto.email);
-  }
-
   @Patch(':id')
   @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any)
   updateMember(

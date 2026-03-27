@@ -1,9 +1,3 @@
 'use client';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-
-export default function Page() {
-  const router = useRouter();
-  useEffect(() => { router.replace('/owner/reports-transactions'); }, [router]);
-  return null;
-}
+import TransactionsPage from '@/components/shared/TransactionsPage';
+export default function Page() { return <TransactionsPage scope="owner" />; }

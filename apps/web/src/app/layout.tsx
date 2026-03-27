@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth';
 import { Toaster } from 'react-hot-toast';
-import BrandAssetsSync from '@/components/shared/BrandAssetsSync';
 
 export const metadata: Metadata = {
   title: 'Billiard POS',
@@ -22,7 +21,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <AuthProvider>
-          <BrandAssetsSync />
           {children}
           <Toaster
             position="top-right"
