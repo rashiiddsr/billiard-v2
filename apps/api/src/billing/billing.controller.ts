@@ -69,7 +69,6 @@ export class BillingController {
     @Query('endDate') endDate?: string,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
-    @Query('unpaidOnly') unpaidOnly?: string,
   ) {
     return this.billingService.listSessions({
       status,
@@ -79,7 +78,6 @@ export class BillingController {
       endDate: endDate ? new Date(endDate) : undefined,
       page,
       limit,
-      unpaidOnly: unpaidOnly === 'true',
     });
   }
 
