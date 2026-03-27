@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ordersApi, api, menuApi, paymentsApi } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Plus, X, Check, Search } from 'lucide-react';
+import { X, Check, Search } from 'lucide-react';
 import { formatRupiah } from '@/lib/utils';
 
 export default function CashierOrdersPage() {
@@ -17,6 +17,7 @@ export default function CashierOrdersPage() {
   const [payAmount, setPayAmount] = useState('');
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('Semua');
+  const [orderNotes, setOrderNotes] = useState('');
 
   useEffect(() => {
     Promise.all([api.get('/billing/sessions/active'), menuApi.list({ isActive: true })])
@@ -60,12 +61,14 @@ export default function CashierOrdersPage() {
       const order = await ordersApi.create({
         billingSessionId: selSession || undefined,
         tableId: selSession ? session?.tableId : undefined,
+        notes: orderNotes.trim() || undefined,
         items: cart.map(i => ({ menuItemId: i.menuItemId, quantity: i.qty })),
       });
 
       if (selSession) {
         toast.success('Pesanan meja dibuat');
         setCart([]);
+        setOrderNotes('');
       } else {
         setStandaloneOrderId(order.id);
         setShowPaymentPopup(true);
@@ -90,6 +93,7 @@ export default function CashierOrdersPage() {
       });
       toast.success(`Pembayaran berhasil! Kembalian: ${formatRupiah(standaloneChange)}`);
       setCart([]);
+      setOrderNotes('');
       resetPaymentPopup();
     } catch (e: any) {
       toast.error(e?.response?.data?.message || 'Gagal memproses pembayaran');
@@ -101,15 +105,8 @@ export default function CashierOrdersPage() {
   return (
     <div>
       <div className="page-header"><div><h1 className="page-title">Pesanan F&B</h1></div></div>
-      <div className="grid-2" style={{ alignItems: 'start' }}>
+      <div className="grid-2 orders-layout" style={{ alignItems: 'start' }}>
         <div className="card card-padded" style={{ minHeight: 640, display: 'flex', flexDirection: 'column' }}>
-          <div className="form-group mb-4"><label className="form-label">Pilih Sesi Meja (opsional)</label>
-            <select className="form-select" value={selSession} onChange={(e) => setSelSession(e.target.value)}>
-              <option value="">-- Standalone (langsung bayar) --</option>
-              {sessions.map(s => <option key={s.id} value={s.id}>{s.table?.name} — {s.member?.name||s.guestName||'Tamu'}</option>)}
-            </select>
-          </div>
-
           <div className="form-group mb-3" style={{ marginBottom: 12 }}>
             <label className="form-label">Cari Produk</label>
             <div style={{ position: 'relative' }}>
@@ -167,6 +164,14 @@ export default function CashierOrdersPage() {
         <div>
           <div className="card card-padded" style={{ position: 'sticky', top: 10 }}>
             <h3 className="card-title mb-4">Pesanan</h3>
+            <div className="form-group mb-3">
+              <label className="form-label">Pilih Sesi Meja (opsional)</label>
+              <select className="form-select" value={selSession} onChange={(e) => setSelSession(e.target.value)}>
+                <option value="">-- Standalone (langsung bayar) --</option>
+                {sessions.map(s => <option key={s.id} value={s.id}>{s.table?.name} — {s.member?.name||s.guestName||'Tamu'}</option>)}
+              </select>
+            </div>
+
             {cart.length===0 ? <p style={{ color:'var(--color-text-muted)',fontSize:13,textAlign:'center',padding:24 }}>Belum ada item</p>
             : <>
               <div style={{ maxHeight: 420, overflowY: 'auto' }}>
@@ -181,6 +186,17 @@ export default function CashierOrdersPage() {
               <div className="divider" />
               <div style={{ display:'flex',justifyContent:'space-between',fontWeight:700,fontSize:15,marginBottom:16 }}>
                 <span>Total</span><span>{formatRupiah(total)}</span>
+              </div>
+              <div className="form-group" style={{ marginBottom: 12 }}>
+                <label className="form-label">Catatan Order (opsional)</label>
+                <textarea
+                  className="form-input"
+                  value={orderNotes}
+                  onChange={(e) => setOrderNotes(e.target.value)}
+                  placeholder="Contoh: kurang pedas, tanpa es, dll."
+                  rows={3}
+                  style={{ resize: 'vertical', minHeight: 72 }}
+                />
               </div>
               <button className="btn btn-success" style={{ width:'100%',justifyContent:'center' }} onClick={handleSubmit} disabled={busy}>
                 {busy?'Memproses...':<><Check size={15}/> {selSession ? 'Buat Pesanan Meja' : 'Konfirmasi & Bayar'}</>}
