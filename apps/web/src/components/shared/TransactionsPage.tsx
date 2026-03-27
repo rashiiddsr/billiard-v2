@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { paymentsApi, usersApi } from '@/lib/api';
 import { formatDateTime, formatRupiah } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
-import { Eye, X } from 'lucide-react';
 
 interface Props { scope: 'cashier' | 'manager' | 'owner' }
 
@@ -42,14 +41,6 @@ export default function TransactionsPage({ scope }: Props) {
     setDetail(res);
   };
 
-  const paymentBadgeClass = (method: string) => {
-    const normalized = String(method || '').toUpperCase();
-    if (normalized === 'CASH') return 'badge-gold';
-    if (normalized === 'QRIS') return 'badge-success';
-    if (normalized === 'TRANSFER') return 'badge-info';
-    return 'badge-neutral';
-  };
-
   return (
     <div>
       <div className="page-header">
@@ -74,24 +65,21 @@ export default function TransactionsPage({ scope }: Props) {
           <table className="data-table">
             <thead>
               <tr>
-                <th>ID Transaksi</th><th>Jenis</th><th>Total</th><th>Kasir</th><th>Pembayaran</th><th>Aksi</th>
+                <th>ID Transaksi</th><th>Pembayaran</th><th>Jenis</th><th>Total</th><th>Kasir</th><th>Waktu</th><th>Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {loading ? <tr><td colSpan={6} style={{ textAlign: 'center', padding: 24 }}>Memuat...</td></tr>
-              : data.length === 0 ? <tr><td colSpan={6} style={{ textAlign: 'center', padding: 24 }}>Tidak ada data</td></tr>
+              {loading ? <tr><td colSpan={7} style={{ textAlign: 'center', padding: 24 }}>Memuat...</td></tr>
+              : data.length === 0 ? <tr><td colSpan={7} style={{ textAlign: 'center', padding: 24 }}>Tidak ada data</td></tr>
               : data.map((p) => (
                 <tr key={p.id}>
                   <td style={{ fontFamily: 'monospace' }}>{p.paymentNumber}</td>
+                  <td><span className="badge badge-neutral">{p.method}</span></td>
                   <td>{p.billingSessionId ? 'Meja + F&B' : 'F&B Standalone'}</td>
                   <td>{formatRupiah(p.totalAmount)}</td>
                   <td>{p.paidBy?.name || '-'}</td>
-                  <td><span className={`badge ${paymentBadgeClass(p.method)}`}>{p.method}</span></td>
-                  <td>
-                    <button className="btn btn-ghost btn-icon btn-sm" title="Lihat Detail" onClick={() => openDetail(p.id)}>
-                      <Eye size={15} />
-                    </button>
-                  </td>
+                  <td>{formatDateTime(p.paidAt || p.createdAt)}</td>
+                  <td><button className="btn btn-ghost btn-sm" onClick={() => openDetail(p.id)}>Lihat Detail</button></td>
                 </tr>
               ))}
             </tbody>
@@ -104,9 +92,7 @@ export default function TransactionsPage({ scope }: Props) {
           <div className="card" style={{ width: '100%', maxWidth: 700 }}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
               <h3 className="card-title">Detail Transaksi</h3>
-              <button className="btn btn-ghost btn-icon" onClick={() => setDetail(null)} aria-label="Tutup modal detail transaksi">
-                <X size={16} />
-              </button>
+              <button className="btn btn-ghost" onClick={() => setDetail(null)}>Tutup</button>
             </div>
             <div className="card-body" style={{ display: 'grid', gap: 8 }}>
               <div><strong>ID:</strong> {detail.paymentNumber}</div>

@@ -409,19 +409,9 @@ export class BillingService {
     memberId?: string;
     page?: number;
     limit?: number;
-    unpaidOnly?: boolean;
   }) {
     const where: any = {};
-    if (filters.unpaidOnly) {
-      if (filters.status) {
-        where.status = filters.status;
-      } else {
-        where.status = { in: [SessionStatus.ACTIVE, SessionStatus.COMPLETED] };
-      }
-      where.payments = { none: { status: 'PAID' } };
-    } else if (filters.status) {
-      where.status = filters.status;
-    }
+    if (filters.status) where.status = filters.status;
     if (filters.tableId) where.tableId = filters.tableId;
     if (filters.memberId) where.memberId = filters.memberId;
     if (filters.startDate || filters.endDate) {

@@ -3,7 +3,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { IsString, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsEmail } from 'class-validator';
 import { MembersService } from './members.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -21,7 +21,7 @@ class UpdateMemberDto {
 }
 
 class ResetMemberCredentialsDto {
-  @IsOptional() @IsString() email?: string;
+  @IsOptional() @IsEmail() email?: string;
 }
 
 @ApiTags('Members')
