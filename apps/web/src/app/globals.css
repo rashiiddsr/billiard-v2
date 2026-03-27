@@ -881,7 +881,11 @@ table.data-table tbody:empty::before {
 /* ─── Waiting List Display (TV) ───────────────────────────────────────────── */
 .waiting-display-shell {
   min-height: 100vh;
-  background: radial-gradient(circle at 15% 10%, #8b5cf6 0%, rgba(139,92,246,0.12) 28%, transparent 50%), radial-gradient(circle at 85% 10%, #22d3ee 0%, rgba(34,211,238,0.16) 30%, transparent 52%), linear-gradient(145deg, #2a1006 0%, #1a0a1f 48%, #07131d 100%);
+  background:
+    radial-gradient(circle at 10% 8%, rgba(245, 158, 11, 0.34) 0%, rgba(245, 158, 11, 0.08) 30%, transparent 54%),
+    radial-gradient(circle at 85% 10%, rgba(14, 165, 233, 0.3) 0%, rgba(14, 165, 233, 0.06) 34%, transparent 58%),
+    radial-gradient(circle at 75% 85%, rgba(139, 92, 246, 0.22) 0%, rgba(139, 92, 246, 0.06) 30%, transparent 54%),
+    linear-gradient(145deg, #2b1208 0%, #1d1026 46%, #0b1a24 100%);
   color: #fff7ed;
   padding: 24px;
   display: flex;
@@ -899,7 +903,7 @@ table.data-table tbody:empty::before {
 .brand-block { display: flex; align-items: center; gap: 14px; }
 .brand-block h1 { color: #fef08a; letter-spacing: 1px; font-size: 36px; text-shadow: 0 6px 20px rgba(0,0,0,.35); }
 .brand-block p { color: #dbeafe; font-size: 16px; }
- .display-welcome {
+.display-welcome {
   color: #a7f3d0;
   font-size: 13px;
   margin-top: 4px;
@@ -919,9 +923,35 @@ table.data-table tbody:empty::before {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
-  color: #fef08a;
+  color: #fefce8;
+  padding: 10px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(250, 204, 21, 0.45);
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.24), rgba(59, 130, 246, 0.2));
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.26);
+}
+
+.display-header-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.display-info-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  color: #fef9c3;
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.54), rgba(30, 64, 175, 0.34));
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .waiting-display-content {
@@ -933,16 +963,20 @@ table.data-table tbody:empty::before {
 }
 
 .waiting-column {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(253, 230, 138, 0.3);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.06));
+  border: 1px solid rgba(253, 230, 138, 0.35);
   border-radius: 18px;
   padding: 16px;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.25);
 }
 
-.called-column { border-color: rgba(196, 181, 253, 0.7); background: linear-gradient(150deg, rgba(99,102,241,.26), rgba(236,72,153,.18)); }
+.called-column {
+  border-color: rgba(196, 181, 253, 0.78);
+  background: linear-gradient(145deg, rgba(99,102,241,.3), rgba(236,72,153,.22));
+}
 
 .column-head {
   display: flex;
@@ -961,10 +995,18 @@ table.data-table tbody:empty::before {
 }
 
 .display-card {
-  background: linear-gradient(150deg, rgba(255,255,255,.17), rgba(255,255,255,.05));
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(145deg, rgba(255,255,255,.18), rgba(255,255,255,.08));
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 14px;
   padding: 14px;
+}
+
+.waiting-card {
+  border-left: 4px solid rgba(250, 204, 21, 0.9);
+}
+
+.called-card {
+  border-left: 4px solid rgba(167, 139, 250, 0.95);
 }
 
 .queue-number {
@@ -1001,7 +1043,7 @@ table.data-table tbody:empty::before {
 }
 
 .display-marquee-wrap {
-  background: rgba(12, 10, 9, 0.8);
+  background: linear-gradient(90deg, rgba(12, 10, 9, 0.88), rgba(30, 27, 75, 0.82));
   border: 1px solid rgba(253, 230, 138, 0.5);
   border-radius: 999px;
   overflow: hidden;
@@ -1040,7 +1082,7 @@ table.data-table tbody:empty::before {
 .display-media-panel {
   border-radius: 16px;
   border: 1px solid rgba(253, 230, 138, 0.34);
-  background: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05));
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -1135,6 +1177,7 @@ table.data-table tbody:empty::before {
 
 @media (max-width: 1280px) {
   .waiting-right-column { grid-template-rows: auto auto; }
+  .display-header-info { justify-content: flex-start; }
 }
 
 /* ─── Extra polish for TV display ──────────────────────────────────────────── */
