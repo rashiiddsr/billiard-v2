@@ -3,7 +3,7 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { companyApi, waitingListApi } from '@/lib/api';
-import { Clock3, Users, PhoneCall, Sparkles, PartyPopper, Expand } from 'lucide-react';
+import { Clock3, Users, PhoneCall, Sparkles, PartyPopper, Expand, Sun, CalendarDays } from 'lucide-react';
 
 interface WaitingEntry {
   id: string;
@@ -44,6 +44,10 @@ function WaitingListDisplayContent() {
   const [entries, setEntries] = useState<WaitingEntry[]>([]);
   const [profile, setProfile] = useState<CompanyProfile | null>(null);
   const [now, setNow] = useState<Date | null>(null);
+  const [companyHours, setCompanyHours] = useState<{ openHour: string; closeHour: string }>({
+    openHour: '10:00',
+    closeHour: '23:00',
+  });
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [calledModalEntry, setCalledModalEntry] = useState<WaitingEntry | null>(null);
   const [showCalledModal, setShowCalledModal] = useState(false);
@@ -97,6 +101,19 @@ function WaitingListDisplayContent() {
   useEffect(() => {
     setIsMounted(true);
     setNow(new Date());
+
+    try {
+      const raw = localStorage.getItem('company-operational-hours');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      const open = typeof parsed?.openHour === 'string' ? parsed.openHour : '';
+      const close = typeof parsed?.closeHour === 'string' ? parsed.closeHour : '';
+      if (open && close) {
+        setCompanyHours({ openHour: open, closeHour: close });
+      }
+    } catch {
+      // noop
+    }
   }, []);
 
   useEffect(() => {
@@ -140,6 +157,13 @@ function WaitingListDisplayContent() {
   const timeLabel = now
     ? now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
     : '--:--:--';
+  const dateLabel = now
+    ? now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    : '-';
+  const effectiveOpenHour = openHour || companyHours.openHour;
+  const effectiveCloseHour = closeHour || companyHours.closeHour;
+  const formatOperationalTime = (value: string) => value.replace(':', '.');
+  const openHoursLabel = `${formatOperationalTime(effectiveOpenHour)} - ${formatOperationalTime(effectiveCloseHour)} WIB`;
 
   return (
     <div className="waiting-display-shell">
@@ -179,14 +203,24 @@ function WaitingListDisplayContent() {
           />
           <div>
             <h1>{title}</h1>
-            <p>{profile?.name || subtitle || 'Billiard Lounge'} {openHour && closeHour ? `· ${openHour} - ${closeHour}` : ''}</p>
+            <p>{profile?.name || subtitle || 'Billiard Lounge'}</p>
             <small className="display-welcome">Selamat datang! Nikmati permainan terbaik kami 🎱</small>
           </div>
         </div>
 
-        <div className="display-clock" suppressHydrationWarning>
-          <Clock3 size={18} />
-          {timeLabel}
+        <div className="display-header-info">
+          <div className="display-info-pill">
+            <Sun size={15} />
+            Jam Buka: {openHoursLabel}
+          </div>
+          <div className="display-info-pill" suppressHydrationWarning>
+            <CalendarDays size={15} />
+            {dateLabel}
+          </div>
+          <div className="display-clock" suppressHydrationWarning>
+            <Clock3 size={18} />
+            {timeLabel}
+          </div>
         </div>
       </header>
 
