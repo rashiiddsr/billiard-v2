@@ -66,7 +66,7 @@ export default function ProfilePage() {
   const initials = user?.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || '??';
 
   return (
-    <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+    <div>
       <div className="page-header" style={{ justifyContent: 'flex-start' }}>
         <div>
           <h1 className="page-title" style={{ textAlign: 'left' }}>Profil Saya</h1>
@@ -87,32 +87,30 @@ export default function ProfilePage() {
         <div><strong>{user?.name}</strong></div>
       </div>
 
-      <div className="card" style={{ width: '100%' }}>
+      <div className="card">
         <div className="card-header"><h3 className="card-title">Informasi Profil</h3></div>
         <div className="card-body">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 14 }}>
-            <div className="form-group">
-              <label className="form-label"><User size={13} style={{ display: 'inline', marginRight: 4 }} /> Nama Lengkap</label>
-              <input className="form-input" value={name} onChange={(e) => setName(e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label className="form-label"><Phone size={13} style={{ display: 'inline', marginRight: 4 }} /> Nomor HP</label>
-              <input className="form-input" value={phone} onChange={(e) => setPhone(e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label className="form-label"><Mail size={13} style={{ display: 'inline', marginRight: 4 }} /> Email</label>
-              <input className="form-input" value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label className="form-label"><Lock size={13} style={{ display: 'inline', marginRight: 4 }} /> Password Baru (opsional)</label>
-              <input
-                type="password"
-                className="form-input"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Kosongkan jika tidak diubah"
-              />
-            </div>
+          <div className="form-group">
+            <label className="form-label"><User size={13} style={{ display: 'inline', marginRight: 4 }} /> Nama Lengkap</label>
+            <input className="form-input" value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label"><Phone size={13} style={{ display: 'inline', marginRight: 4 }} /> Nomor HP</label>
+            <input className="form-input" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label"><Mail size={13} style={{ display: 'inline', marginRight: 4 }} /> Email</label>
+            <input className="form-input" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label"><Lock size={13} style={{ display: 'inline', marginRight: 4 }} /> Password Baru (opsional)</label>
+            <input
+              type="password"
+              className="form-input"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Kosongkan jika tidak diubah"
+            />
           </div>
         </div>
         <div className="card-footer">
