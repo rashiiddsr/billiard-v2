@@ -148,14 +148,14 @@ export const billingApi = {
 // ─── Members (baru v2) ────────────────────────────────────────────────────────
 export const membersApi = {
   list:        (params?: { search?: string; isActive?: boolean; page?: number; limit?: number }) =>
-    api.get('/members', { params }).then((r) => r.data),
+    api.get('/members/cashier/list', { params }).then((r) => r.data),
   get:         (id: string) => api.get(`/members/${id}`).then((r) => r.data),
   create:      (data: { name: string; phoneNumber: string }) =>
-    api.post('/members', data).then((r) => r.data),
+    api.post('/members/cashier/create', data).then((r) => r.data),
   update:      (id: string, data: any) =>
-    api.patch(`/members/${id}`, data).then((r) => r.data),
+    api.patch(`/members/cashier/${id}`, data).then((r) => r.data),
   resetCredentials: (id: string, data?: { email?: string }) =>
-    api.patch(`/members/${id}/reset-credentials`, data || {}).then((r) => r.data),
+    api.patch(`/members/cashier/${id}/reset-credentials`, data || {}).then((r) => r.data),
   search:      (q: string) =>
     api.get('/members/search', { params: { q } }).then((r) => r.data),
   myProfile:   () => api.get('/members/profile/me').then((r) => r.data),
