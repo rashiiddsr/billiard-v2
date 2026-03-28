@@ -233,8 +233,6 @@ export const attendanceApi = {
     getPublic<any>('/attendance/public/display'),
   dailyReport:   (date: string) =>
     api.get('/attendance/reports/daily', { params: { date } }).then((r) => r.data),
-  deleteRecord:  (id: string) =>
-    api.delete(`/attendance/records/${id}`).then((r) => r.data),
   myLeaveRequests: () =>
     api.get('/attendance/leave-requests/my').then((r) => r.data),
   createLeaveRequest: (data: { type: 'SICK' | 'PERMIT' | 'OTHER'; date: string; reason?: string }) =>

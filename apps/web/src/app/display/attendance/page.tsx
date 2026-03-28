@@ -1,13 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Clock, MapPin, QrCode, Radio, ShieldCheck, CalendarDays } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Clock, MapPin, QrCode, Radio, ShieldCheck } from 'lucide-react';
 
 export default function AttendanceDisplayPage() {
   const [data, setData] = useState<any>(null);
-  const [now, setNow] = useState<Date | null>(null);
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     const load = () => {
@@ -18,25 +15,11 @@ export default function AttendanceDisplayPage() {
     };
     load();
     const t = setInterval(load, 30000);
-    const c = setInterval(() => setNow(new Date()), 1000);
-    return () => {
-      clearInterval(t);
-      clearInterval(c);
-    };
+    return () => clearInterval(t);
   }, []);
 
   const qrData = data?.qrCode || 'loading';
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(qrData)}`;
-  const openHour = searchParams.get('openHour') || '10:00';
-  const closeHour = searchParams.get('closeHour') || '23:00';
-
-  const dateLabel = useMemo(() => now
-    ? now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-    : '-', [now]);
-
-  const timeLabel = useMemo(() => now
-    ? now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-    : '--:--:--', [now]);
 
   return (
     <div className="attendance-display-shell">
@@ -49,11 +32,7 @@ export default function AttendanceDisplayPage() {
             <h1>Display Absensi</h1>
             <p>Scan QR ini via kamera kasir/manager. QR berubah otomatis tiap 5 menit.</p>
           </div>
-          <div style={{ display: 'grid', gap: 8, justifyItems: 'end' }}>
-            <div className="attendance-display-badge"><Radio size={14} /> Live</div>
-            <div className="display-info-pill"><Clock size={14} /> Operasional: {openHour} - {closeHour}</div>
-            <div className="display-info-pill"><CalendarDays size={14} /> {dateLabel} · {timeLabel}</div>
-          </div>
+          <div className="attendance-display-badge"><Radio size={14} /> Live</div>
         </div>
 
         <div className="attendance-display-grid">
