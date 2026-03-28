@@ -209,7 +209,7 @@ export const waitingListApi = {
 
 // ─── Attendance (baru v2) ─────────────────────────────────────────────────────
 export const attendanceApi = {
-  checkIn:       (data: { shiftId: string; lat?: number; lng?: number }) =>
+  checkIn:       (data: { qrCode: string; lat?: number; lng?: number }) =>
     api.post('/attendance/check-in', data).then((r) => r.data),
   myRecords:     (params?: any) =>
     api.get('/attendance/my-records', { params }).then((r) => r.data),
@@ -229,6 +229,18 @@ export const attendanceApi = {
     api.get('/attendance/setting').then((r) => r.data),
   updateSetting: (data: any) =>
     api.patch('/attendance/setting', data).then((r) => r.data),
+  displayPayload: () =>
+    getPublic<any>('/attendance/public/display'),
+  dailyReport:   (date: string) =>
+    api.get('/attendance/reports/daily', { params: { date } }).then((r) => r.data),
+  myLeaveRequests: () =>
+    api.get('/attendance/leave-requests/my').then((r) => r.data),
+  createLeaveRequest: (data: { type: 'SICK' | 'PERMIT' | 'OTHER'; date: string; reason?: string }) =>
+    api.post('/attendance/leave-requests', data).then((r) => r.data),
+  leaveRequests: (status?: string) =>
+    api.get('/attendance/leave-requests', { params: status ? { status } : undefined }).then((r) => r.data),
+  reviewLeaveRequest: (id: string, data: { status: 'APPROVED' | 'REJECTED'; managerNote?: string }) =>
+    api.patch(`/attendance/leave-requests/${id}/review`, data).then((r) => r.data),
 };
 
 // ─── Packages ─────────────────────────────────────────────────────────────────
