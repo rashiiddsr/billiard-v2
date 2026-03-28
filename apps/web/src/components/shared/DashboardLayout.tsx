@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import { resolveMediaUrl } from '@/lib/utils';
 import Sidebar from './Sidebar';
 import { Bell, ChevronDown, LogOut, Menu, User, Settings } from 'lucide-react';
 
@@ -112,8 +113,8 @@ export default function DashboardLayout({ children, allowedRoles }: Props) {
                 aria-label="Profile menu"
               >
                 <div className="profile-pill-avatar">
-                  {user.profileImageUrl ? (
-                    <img src={user.profileImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  {resolveMediaUrl(user.profileImageUrl) ? (
+                    <img src={resolveMediaUrl(user.profileImageUrl)!} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : initials}
                 </div>
                 <div style={{ lineHeight: 1.25, textAlign: 'left' }}>

@@ -25,3 +25,13 @@ export function asArray<T = any>(value: any): T[] {
   if (value?.data && Array.isArray(value.data.items)) return value.data.items as T[];
   return [];
 }
+
+
+export function resolveMediaUrl(path?: string | null): string | null {
+  if (!path) return null;
+  if (/^https?:\/\//i.test(path)) return path;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+  const baseOrigin = apiUrl.replace(/\/api\/v1\/?$/, '');
+  if (!path.startsWith('/')) return `${baseOrigin}/${path}`;
+  return `${baseOrigin}${path}`;
+}

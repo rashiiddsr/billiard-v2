@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { usersApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { resolveMediaUrl } from '@/lib/utils';
 import toast from 'react-hot-toast';
-import { User, Phone, Mail, Lock, Camera } from 'lucide-react';
+import { Phone, Mail, Hash, Lock, Camera, User } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, setUser } = useAuth();
@@ -13,18 +14,19 @@ export default function ProfilePage() {
   const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      setName(user.name);
-      setPhone(user.phoneNumber || '');
-      setEmail(user.email || '');
-    }
+    if (!user) return;
+    setName(user.name || '');
+    setPhone(user.phoneNumber || '');
+    setEmail(user.email || '');
   }, [user]);
 
   const handleSave = async () => {
     if (!name.trim()) return toast.error('Nama wajib diisi');
     if (!email.trim()) return toast.error('Email wajib diisi');
+    if (!phone.trim()) return toast.error('Nomor HP wajib diisi');
     if (newPassword && newPassword.length < 6) return toast.error('Password minimal 6 karakter');
 
     setSaving(true);
@@ -34,9 +36,7 @@ export default function ProfilePage() {
         phoneNumber: phone.trim(),
         email: email.trim().toLowerCase(),
       };
-      if (newPassword.trim()) {
-        payload.password = newPassword.trim();
-      }
+      if (newPassword.trim()) payload.password = newPassword.trim();
 
       const updated = await usersApi.updateMyProfile(payload);
       setUser({ ...user!, ...updated });
@@ -51,60 +51,148 @@ export default function ProfilePage() {
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.currentTarget.value = '';
     if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('File harus berupa gambar');
+      return;
+    }
+
+    setUploadingPhoto(true);
     const form = new FormData();
     form.append('photo', file);
     try {
       const res = await usersApi.uploadMyPhoto(form);
       setUser({ ...user!, profileImageUrl: res.profileImageUrl });
-      toast.success('Foto diperbarui');
-    } catch {
-      toast.error('Gagal upload foto');
+      toast.success('Foto profil diperbarui');
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Gagal upload foto');
+    } finally {
+      setUploadingPhoto(false);
     }
   };
 
-  const initials = user?.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || '??';
+  if (!user) return null;
+
+  const initials = user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || '??';
+  const photoUrl = resolveMediaUrl(user.profileImageUrl);
 
   return (
-    <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-      <div className="page-header" style={{ justifyContent: 'flex-start' }}>
+    <div style={{ maxWidth: 520, margin: '0 auto' }}>
+      <div className="page-header">
         <div>
-          <h1 className="page-title" style={{ textAlign: 'left' }}>Profil Saya</h1>
-          <p className="page-subtitle" style={{ textAlign: 'left' }}>Kelola informasi akun, kontak, dan keamanan login</p>
+          <h1 className="page-title">Profil Saya</h1>
+          <p className="page-subtitle">Kelola informasi akun Anda</p>
         </div>
       </div>
 
-      <div className="card card-padded mb-4" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <div style={{ position: 'relative' }}>
-          <div style={{ width: 76, height: 76, borderRadius: '50%', background: 'var(--color-primary)', border: '3px solid var(--color-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 700, color: 'var(--color-gold)', overflow: 'hidden' }}>
-            {user?.profileImageUrl ? <img src={user.profileImageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initials}
+      <div className="member-card-visual mb-6">
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+            <div style={{ position: 'relative', width: 56, height: 56 }}>
+              <div
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: '50%',
+                  background: 'rgba(201,168,76,0.25)',
+                  border: '2px solid var(--color-gold)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 20,
+                  fontWeight: 700,
+                  color: 'var(--color-gold)',
+                  overflow: 'hidden',
+                }}
+              >
+                {photoUrl ? (
+                  <img src={photoUrl} alt="Foto profil" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : initials}
+              </div>
+
+              <label
+                style={{
+                  position: 'absolute',
+                  right: -2,
+                  bottom: -2,
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  background: 'var(--color-gold)',
+                  color: 'var(--color-primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: uploadingPhoto ? 'wait' : 'pointer',
+                  border: '2px solid white',
+                  opacity: uploadingPhoto ? 0.7 : 1,
+                }}
+                title={uploadingPhoto ? 'Sedang upload...' : 'Ubah foto profil'}
+              >
+                <Camera size={12} />
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  style={{ display: 'none' }}
+                  disabled={uploadingPhoto}
+                  onChange={handlePhotoUpload}
+                />
+              </label>
+            </div>
+
+            <div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 1 }}>
+                Profil Akun
+              </div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'white', fontFamily: 'Playfair Display, serif' }}>
+                {user.name}
+              </div>
+            </div>
           </div>
-          <label style={{ position: 'absolute', bottom: 0, right: 0, width: 26, height: 26, background: 'var(--color-gold)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '2px solid white' }}>
-            <Camera size={13} style={{ color: 'var(--color-primary)' }} />
-            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoUpload} />
-          </label>
+
+          <div className="member-number">{user.memberNumber || '—'}</div>
         </div>
-        <div><strong>{user?.name}</strong></div>
       </div>
 
-      <div className="card" style={{ width: '100%' }}>
-        <div className="card-header"><h3 className="card-title">Informasi Profil</h3></div>
-        <div className="card-body">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 14 }}>
-            <div className="form-group">
-              <label className="form-label"><User size={13} style={{ display: 'inline', marginRight: 4 }} /> Nama Lengkap</label>
+      <div className="card">
+        <div className="card-header" style={{ paddingBottom: 16 }}>
+          <h3 className="card-title">Informasi Akun</h3>
+        </div>
+        <div className="card-body" style={{ paddingTop: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'var(--color-gold-pale)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Hash size={16} style={{ color: 'var(--color-gold)' }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Nomor Member</div>
+                <div style={{ fontWeight: 700, fontFamily: 'monospace', fontSize: 15, letterSpacing: 1, color: 'var(--color-primary)' }}>
+                  {user.memberNumber || '—'}
+                </div>
+              </div>
+            </div>
+
+            <div className="divider" style={{ margin: '4px 0' }} />
+
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label"><User size={14} style={{ display: 'inline', marginRight: 4 }} /> Nama Lengkap</label>
               <input className="form-input" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
-            <div className="form-group">
-              <label className="form-label"><Phone size={13} style={{ display: 'inline', marginRight: 4 }} /> Nomor HP</label>
+
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label"><Phone size={14} style={{ display: 'inline', marginRight: 4 }} /> Nomor HP</label>
               <input className="form-input" value={phone} onChange={(e) => setPhone(e.target.value)} />
             </div>
-            <div className="form-group">
-              <label className="form-label"><Mail size={13} style={{ display: 'inline', marginRight: 4 }} /> Email</label>
+
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label"><Mail size={14} style={{ display: 'inline', marginRight: 4 }} /> Email</label>
               <input className="form-input" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
-            <div className="form-group">
-              <label className="form-label"><Lock size={13} style={{ display: 'inline', marginRight: 4 }} /> Password Baru (opsional)</label>
+
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label"><Lock size={14} style={{ display: 'inline', marginRight: 4 }} /> Password Baru (opsional)</label>
               <input
                 type="password"
                 className="form-input"
