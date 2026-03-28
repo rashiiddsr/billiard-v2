@@ -246,7 +246,7 @@ export class AttendanceService {
           distanceMeters: null,
           status: 'EXCUSED',
           notes: `${leave.type}: ${leave.reason || '-'}${leave.managerNote ? ` (catatan manager: ${leave.managerNote})` : ''}`,
-          shift: shifts[0] || null,
+          shift: null,
         };
       }
       return {
@@ -262,6 +262,25 @@ export class AttendanceService {
     });
 
     return { date: base, data: rows };
+  }
+
+  async deleteRecord(id: string, actorId: string) {
+    const existing = await this.prisma.attendanceRecord.findUnique({
+      where: { id },
+      include: { user: { select: { id: true, name: true } }, shift: { select: { id: true, name: true } } },
+    });
+    if (!existing) throw new NotFoundException('Data absensi tidak ditemukan');
+
+    await this.prisma.attendanceRecord.delete({ where: { id } });
+    await this.audit.log({
+      userId: actorId,
+      action: AuditAction.DELETE,
+      entity: 'AttendanceRecord',
+      entityId: id,
+      metadata: { userId: existing.userId, shiftId: existing.shiftId, checkInAt: existing.checkInAt, status: existing.status },
+    });
+
+    return { success: true };
   }
 
   async listShifts(includeInactive = false) {

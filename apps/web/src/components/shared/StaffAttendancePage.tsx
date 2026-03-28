@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { CalendarCheck, Clock, QrCode, Send, ShieldCheck, XCircle, CheckCircle2 } from 'lucide-react';
+import { CalendarCheck, Clock, QrCode, Send, ShieldCheck, XCircle, CheckCircle2, Trash2 } from 'lucide-react';
 
 type RoleType = 'MANAGER' | 'CASHIER';
 type StaffTab = 'workspace' | 'approvals' | 'history';
@@ -13,6 +13,7 @@ interface Props {
 }
 
 const PRESENT_STATUSES = ['ON_TIME', 'LATE', 'EARLY'];
+const ABSENT_STATUSES = ['REJECTED', 'ABSENT', 'EXCUSED'];
 
 export default function StaffAttendancePage({ role }: Props) {
   const [payload, setPayload] = useState<any>(null);
@@ -25,9 +26,7 @@ export default function StaffAttendancePage({ role }: Props) {
   const [cameraError, setCameraError] = useState('');
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const detectTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const detectorRef = useRef<any>(null);
+  const scannerControlsRef = useRef<{ stop?: () => void } | null>(null);
   const submittingRef = useRef(false);
   const lastScanRef = useRef('');
 
@@ -45,7 +44,7 @@ export default function StaffAttendancePage({ role }: Props) {
       setPayload(publicPayload);
       setMyRecords(recordsRes.data || []);
       setPendingLeaves(pendingRes || []);
-      setTeamRecords((dailyReports || []).filter((r: any) => PRESENT_STATUSES.includes(r.status)));
+      setTeamRecords(dailyReports || []);
     } catch {
       toast.error('Gagal memuat data absensi');
     }
@@ -58,15 +57,10 @@ export default function StaffAttendancePage({ role }: Props) {
   }, [loadAll]);
 
   const stopScanner = useCallback(() => {
-    if (detectTimerRef.current) {
-      clearInterval(detectTimerRef.current);
-      detectTimerRef.current = null;
+    if (scannerControlsRef.current?.stop) {
+      scannerControlsRef.current.stop();
     }
-
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
+    scannerControlsRef.current = null;
 
     if (videoRef.current) {
       videoRef.current.pause();
@@ -122,54 +116,48 @@ export default function StaffAttendancePage({ role }: Props) {
       return;
     }
 
-    const canScan = typeof window !== 'undefined' && 'BarcodeDetector' in window;
-    if (!canScan) {
-      setCameraError('Browser ini belum mendukung scan QR otomatis.');
-      return;
-    }
-
-    let mounted = true;
+    let active = true;
 
     const init = async () => {
       try {
         setCameraError('');
-        const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
-        detectorRef.current = detector;
+        const [{ BrowserQRCodeReader }, zxingCore] = await Promise.all([
+          import('@zxing/browser'),
+          import('@zxing/library'),
+        ]);
+        if (!active || !videoRef.current) return;
 
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' } },
-          audio: false,
+        const reader = new BrowserQRCodeReader(undefined, {
+          delayBetweenScanAttempts: 350,
+          delayBetweenScanSuccess: 700,
         });
-        if (!mounted || !videoRef.current) return;
 
-        streamRef.current = stream;
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-
-        detectTimerRef.current = setInterval(async () => {
-          if (!videoRef.current || !detectorRef.current || submittingRef.current) return;
-          try {
-            const barcodes = await detectorRef.current.detect(videoRef.current);
-            if (barcodes?.[0]?.rawValue) {
-              const code = String(barcodes[0].rawValue);
-              if (code && code !== lastScanRef.current) {
-                lastScanRef.current = code;
-                void checkInWithCode(code);
-              }
+        const controls = await reader.decodeFromVideoDevice(undefined, videoRef.current, (result, error) => {
+          if (!active || submittingRef.current) return;
+          if (result) {
+            const code = result.getText().trim();
+            if (code && code !== lastScanRef.current) {
+              lastScanRef.current = code;
+              void checkInWithCode(code);
             }
-          } catch {
-            // ignore read frame errors
+            return;
           }
-        }, 700);
+
+          if (error && !(error instanceof zxingCore.NotFoundException)) {
+            setCameraError('Kamera aktif, tetapi QR belum terbaca jelas. Arahkan kamera ke QR display.');
+          }
+        });
+
+        scannerControlsRef.current = controls;
       } catch {
         setCameraError('Gagal mengakses kamera. Mohon izinkan akses kamera pada browser.');
       }
     };
 
-    init();
+    void init();
 
     return () => {
-      mounted = false;
+      active = false;
       stopScanner();
     };
   }, [tab, scanBlockedMessage, stopScanner, checkInWithCode]);
@@ -186,7 +174,7 @@ export default function StaffAttendancePage({ role }: Props) {
 
     try {
       await api.post('/attendance/leave-requests', { type: 'PERMIT', date: today, reason: leaveReason.trim() });
-      toast.success('Pengajuan izin dikirim');
+      toast.success('Pengajuan izin harian dikirim');
       setLeaveReason('');
       await loadAll();
     } catch (e: any) {
@@ -204,6 +192,17 @@ export default function StaffAttendancePage({ role }: Props) {
     }
   };
 
+  const deleteRecord = async (id: string) => {
+    if (!confirm('Hapus absensi ini? Gunakan hanya untuk data fraud.')) return;
+    try {
+      await api.delete(`/attendance/records/${id}`);
+      toast.success('Data absensi dihapus');
+      await loadAll();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Gagal menghapus absensi');
+    }
+  };
+
   const tabs = role === 'MANAGER'
     ? [
       { key: 'workspace' as const, label: 'Scan Absen' },
@@ -214,6 +213,9 @@ export default function StaffAttendancePage({ role }: Props) {
       { key: 'workspace' as const, label: 'Scan Absen' },
       { key: 'history' as const, label: 'Laporan Absensi' },
     ];
+
+  const presentCount = teamRecords.filter((r) => PRESENT_STATUSES.includes(r.status)).length;
+  const absentCount = teamRecords.filter((r) => ABSENT_STATUSES.includes(r.status)).length;
 
   return (
     <div>
@@ -276,13 +278,13 @@ export default function StaffAttendancePage({ role }: Props) {
             </div>
 
             <div className="card card-padded">
-              <div className="attendance-panel-title"><Send size={16} /> Pengajuan Izin</div>
+              <div className="attendance-panel-title"><Send size={16} /> Pengajuan Izin Harian</div>
               <textarea
                 className="form-input"
                 style={{ minHeight: 90 }}
                 value={leaveReason}
                 onChange={(e) => setLeaveReason(e.target.value)}
-                placeholder="Tuliskan alasan izin"
+                placeholder="Tuliskan alasan permit hari ini"
               />
               <button className="btn btn-primary" style={{ marginTop: 10 }} onClick={submitLeave}>
                 <Send size={14} /> Kirim Pengajuan
@@ -313,6 +315,19 @@ export default function StaffAttendancePage({ role }: Props) {
 
       {tab === 'history' && role === 'MANAGER' && (
         <div style={{ display: 'grid', gap: 12 }}>
+          <div className="grid-2 mb-4">
+            <div className="stat-card">
+              <div className="stat-card-icon"><CheckCircle2 size={20} /></div>
+              <div className="stat-card-value" style={{ color: 'var(--color-success)' }}>{presentCount}</div>
+              <div className="stat-card-label">Hadir</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-card-icon"><XCircle size={20} /></div>
+              <div className="stat-card-value" style={{ color: 'var(--color-danger)' }}>{absentCount}</div>
+              <div className="stat-card-label">Tidak Hadir</div>
+            </div>
+          </div>
+
           <div className="card card-padded" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>Filter tanggal:</span>
             <input type="date" className="form-input" style={{ width: 'auto' }} value={reportDate} onChange={(e) => setReportDate(e.target.value)} />
@@ -321,20 +336,31 @@ export default function StaffAttendancePage({ role }: Props) {
             <div className="table-wrapper">
               <table className="data-table">
                 <thead>
-                  <tr><th>Karyawan</th><th>Shift</th><th>Jam</th><th>Status</th><th>Catatan</th></tr>
+                  <tr><th>Karyawan</th><th>Shift</th><th>Jam Check-in</th><th>Jarak</th><th>Status</th><th>Catatan</th><th>Aksi</th></tr>
                 </thead>
                 <tbody>
                   {teamRecords.map((r) => (
                     <tr key={r.id}>
-                      <td>{r.user?.name || '-'}</td>
+                      <td>
+                        <div style={{ fontWeight: 600 }}>{r.user?.name || '-'}</div>
+                        <div style={{ fontSize: 11, color: 'var(--color-text-muted)', textTransform: 'capitalize' }}>{r.user?.role?.toLowerCase() || '-'}</div>
+                      </td>
                       <td>{r.shift?.name || '-'}</td>
                       <td>{r.checkInAt ? new Date(r.checkInAt).toLocaleTimeString('id-ID') : '-'}</td>
-                      <td>Hadir</td>
+                      <td>{r.distanceMeters ?? '-'}</td>
+                      <td>{PRESENT_STATUSES.includes(r.status) ? 'Hadir' : 'Tidak Hadir'}</td>
                       <td>{r.notes || '-'}</td>
+                      <td>
+                        {!String(r.id).startsWith('absent-') && !String(r.id).startsWith('leave-') ? (
+                          <button className="btn btn-ghost btn-icon btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => deleteRecord(r.id)}>
+                            <Trash2 size={14} />
+                          </button>
+                        ) : '—'}
+                      </td>
                     </tr>
                   ))}
                   {teamRecords.length === 0 && (
-                    <tr><td colSpan={5} style={{ textAlign: 'center', padding: 20 }}>Belum ada data hadir pada tanggal ini</td></tr>
+                    <tr><td colSpan={7} style={{ textAlign: 'center', padding: 20 }}>Belum ada data absensi pada tanggal ini</td></tr>
                   )}
                 </tbody>
               </table>
