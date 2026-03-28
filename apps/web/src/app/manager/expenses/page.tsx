@@ -82,8 +82,8 @@ export default function ExpensesPage() {
         </tbody>
       </table></div></div>
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-          <div className="card" style={{ width: '100%', maxWidth: 420 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
+          <div className="card" style={{ width: '100%', maxWidth: 420, maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}><h3 className="card-title">{editId ? 'Edit' : 'Catat'} Pengeluaran</h3><button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={18} /></button></div>
             <div className="card-body">
               <div className="form-group"><label className="form-label">Kategori</label><select className="form-select" value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}>{cats.map(c => <option key={c} value={c}>{c}</option>)}</select></div>

@@ -100,8 +100,8 @@ export default function TransactionsPage({ scope }: Props) {
       </div>
 
       {detail && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-          <div className="card" style={{ width: '100%', maxWidth: 700 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
+          <div className="card" style={{ width: '100%', maxWidth: 700, maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
               <h3 className="card-title">Detail Transaksi</h3>
               <button className="btn btn-ghost btn-icon" onClick={() => setDetail(null)} aria-label="Tutup modal detail transaksi">

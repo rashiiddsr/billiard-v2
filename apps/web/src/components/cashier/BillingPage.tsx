@@ -173,7 +173,7 @@ export default function BillingPage() {
   };
 
   const Overlay = ({ children }: { children: React.ReactNode }) => (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, padding:20 }}>
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.35)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, padding:20 }}>
       {children}
     </div>
   );
@@ -357,7 +357,7 @@ export default function BillingPage() {
       {/* Modal Stop */}
       {modal === 'stop' && sel && (
         <Overlay>
-          <div className="card" style={{ width:'100%', maxWidth:360 }}>
+          <div className="card" style={{ width:'100%', maxWidth:360, maxHeight:'90vh', overflowY:'auto' }}>
             <div className="card-header"><h3 className="card-title">Stop Billing — {sel.name}</h3></div>
             <div className="card-body">
               {sess(sel) && (() => {
@@ -390,7 +390,7 @@ export default function BillingPage() {
       {/* Modal Extend */}
       {modal === 'extend' && sel && (
         <Overlay>
-          <div className="card" style={{ width:'100%', maxWidth:400 }}>
+          <div className="card" style={{ width:'100%', maxWidth:400, maxHeight:'90vh', overflowY:'auto' }}>
             <div className="card-header" style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <h3 className="card-title">Perpanjang — {sel.name}</h3>
               <button className="btn btn-ghost btn-icon" onClick={close}><X size={18} /></button>
@@ -436,7 +436,7 @@ export default function BillingPage() {
       {/* Modal Move */}
       {modal === 'move' && sel && (
         <Overlay>
-          <div className="card" style={{ width:'100%', maxWidth:360 }}>
+          <div className="card" style={{ width:'100%', maxWidth:360, maxHeight:'90vh', overflowY:'auto' }}>
             <div className="card-header" style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <h3 className="card-title">Pindah Meja</h3>
               <button className="btn btn-ghost btn-icon" onClick={close}><X size={18} /></button>

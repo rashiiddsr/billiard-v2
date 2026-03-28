@@ -56,8 +56,8 @@ export default function UsersPage() {
         </tbody>
       </table></div></div>
       {showModal && (
-        <div style={{ position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999,padding:20 }}>
-          <div className="card" style={{ width:'100%',maxWidth:460 }}>
+        <div style={{ position:'fixed',inset:0,background:'rgba(0,0,0,0.35)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999,padding:20 }}>
+          <div className="card" style={{ width:'100%',maxWidth:460,maxHeight:'90vh',overflowY:'auto' }}>
             <div className="card-header" style={{ display:'flex',justifyContent:'space-between' }}><h3 className="card-title">{editId?'Edit':'Tambah'} User</h3><button className="btn btn-ghost btn-icon" onClick={()=>setShowModal(false)}><X size={18}/></button></div>
             <div className="card-body">
               <div className="grid-2">
