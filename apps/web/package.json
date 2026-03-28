@@ -19,7 +19,9 @@
     "recharts": "^2.10.4",
     "react-hot-toast": "^2.4.1",
     "lucide-react": "^0.323.0",
-    "clsx": "^2.1.0"
+    "clsx": "^2.1.0",
+    "@zxing/browser": "^0.1.5",
+    "@zxing/library": "^0.21.3"
   },
   "devDependencies": {
     "@types/js-cookie": "^3.0.6",

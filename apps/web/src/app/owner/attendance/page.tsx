@@ -106,7 +106,7 @@ export default function AttendancePage() {
   // Stats for the day
   const present = records.filter((r) => ['ON_TIME', 'LATE', 'EARLY'].includes(r.status)).length;
   const absent = records.filter((r) => ['REJECTED', 'ABSENT', 'EXCUSED'].includes(r.status)).length;
-  const displayedRecords = records.filter((r) => ['ON_TIME', 'LATE', 'EARLY'].includes(r.status));
+  const displayedRecords = records;
 
   // Shift CRUD
   const openCreateShift = () => {
@@ -145,6 +145,17 @@ export default function AttendancePage() {
       await api.delete(`/attendance/shifts/${id}`);
       toast.success('Shift dihapus'); loadShifts();
     } catch (e: any) { toast.error(e?.response?.data?.message || 'Gagal menghapus'); }
+  };
+
+  const handleDeleteRecord = async (id: string) => {
+    if (!confirm('Hapus absensi ini? Gunakan hanya untuk data fraud.')) return;
+    try {
+      await api.delete(`/attendance/records/${id}`);
+      toast.success('Data absensi dihapus');
+      await loadRecords();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Gagal menghapus absensi');
+    }
   };
 
   // Setting
@@ -253,14 +264,15 @@ export default function AttendancePage() {
                     <th>Jarak</th>
                     <th>Status</th>
                     <th>Catatan</th>
+                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan={6} style={{ textAlign: 'center', padding: 32 }}>Memuat...</td></tr>
+                    <tr><td colSpan={7} style={{ textAlign: 'center', padding: 32 }}>Memuat...</td></tr>
                   ) : displayedRecords.length === 0 ? (
-                    <tr><td colSpan={6} style={{ textAlign: 'center', padding: 32, color: 'var(--color-text-muted)' }}>
-                      Belum ada data karyawan hadir pada tanggal ini
+                    <tr><td colSpan={7} style={{ textAlign: 'center', padding: 32, color: 'var(--color-text-muted)' }}>
+                      Belum ada data absensi pada tanggal ini
                     </td></tr>
                   ) : displayedRecords.map((r) => {
                     const cfg = statusBadge[r.status];
@@ -279,14 +291,21 @@ export default function AttendancePage() {
                           {r.checkInAt ? new Date(r.checkInAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}
                         </td>
                         <td style={{ fontSize: 13 }}>
-                          {r.distanceMeters !== null ? `${r.distanceMeters}m` : '—'}
+                          {r.distanceMeters !== null ? `${r.distanceMeters}m` : '-'}
                         </td>
                         <td>
                           <span className={`badge ${cfg.cls}`} style={{ display: 'inline-flex', gap: 4 }}>
                             <Icon size={11} /> {cfg.label}
                           </span>
                         </td>
-                        <td style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{r.notes || '—'}</td>
+                        <td style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{r.notes || '-'}</td>
+                        <td>
+                          {!String(r.id).startsWith('absent-') && !String(r.id).startsWith('leave-') ? (
+                            <button className="btn btn-ghost btn-icon btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => handleDeleteRecord(r.id)}>
+                              <Trash2 size={14} />
+                            </button>
+                          ) : '—'}
+                        </td>
                       </tr>
                     );
                   })}
