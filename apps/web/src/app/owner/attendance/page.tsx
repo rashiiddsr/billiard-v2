@@ -8,6 +8,7 @@ import {
   CalendarCheck, Clock, MapPin, Settings, Plus, Edit2, Trash2,
   X, CheckCircle, AlertTriangle, XCircle, Users, Filter,
 } from 'lucide-react';
+import ModalPortal from '@/components/shared/ModalPortal';
 
 interface AttendanceRecord {
   id: string;
@@ -345,7 +346,7 @@ export default function AttendancePage() {
       {/* ─── Tab: Settings ────────────────────────────────── */}
       {tab === 'settings' && (
         <div>
-          <div className="card card-padded" style={{ maxWidth: 560 }}>
+          <div className="card card-padded">
             <h3 style={{ fontWeight: 700, marginBottom: 16, color: 'var(--color-primary)' }}>
               Lokasi & Radius Absensi
             </h3>
@@ -383,13 +384,14 @@ export default function AttendancePage() {
 
       {/* Modal Shift */}
       {showShiftModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-          <div className="card" style={{ width: '100%', maxWidth: 440 }}>
-            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <ModalPortal>
+        <div className="modal-overlay">
+          <div className="modal-card modal-sm">
+            <div className="modal-header">
               <h3 className="card-title">{editShiftId ? 'Edit Shift' : 'Tambah Shift'}</h3>
               <button className="btn btn-ghost btn-icon" onClick={() => setShowShiftModal(false)}><X size={18} /></button>
             </div>
-            <div className="card-body">
+            <div className="modal-body">
               <div className="form-group">
                 <label className="form-label">Nama Shift <span className="required">*</span></label>
                 <input className="form-input" placeholder="contoh: Shift Malam" value={shiftName} onChange={(e) => setShiftName(e.target.value)} autoFocus />
@@ -417,7 +419,7 @@ export default function AttendancePage() {
                 </div>
               </div>
             </div>
-            <div className="card-footer" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <div className="modal-footer">
               <button className="btn btn-ghost" onClick={() => setShowShiftModal(false)}>Batal</button>
               <button className="btn btn-primary" onClick={handleShiftSubmit} disabled={submitting}>
                 {submitting ? 'Menyimpan...' : 'Simpan'}
@@ -425,17 +427,19 @@ export default function AttendancePage() {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Modal Setting */}
       {showSettingModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-          <div className="card" style={{ width: '100%', maxWidth: 440 }}>
-            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <ModalPortal>
+        <div className="modal-overlay">
+          <div className="modal-card modal-sm">
+            <div className="modal-header">
               <h3 className="card-title">Setting Lokasi Absensi</h3>
               <button className="btn btn-ghost btn-icon" onClick={() => setShowSettingModal(false)}><X size={18} /></button>
             </div>
-            <div className="card-body">
+            <div className="modal-body">
               <div className="form-group">
                 <label className="form-label">Nama Venue</label>
                 <input className="form-input" placeholder="contoh: Billiard Center v-luxe" value={venueName} onChange={(e) => setVenueName(e.target.value)} />
@@ -459,7 +463,7 @@ export default function AttendancePage() {
                 <div className="form-hint">Absensi dari luar radius akan DITOLAK</div>
               </div>
             </div>
-            <div className="card-footer" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <div className="modal-footer">
               <button className="btn btn-ghost" onClick={() => setShowSettingModal(false)}>Batal</button>
               <button className="btn btn-primary" onClick={handleSettingSubmit} disabled={submitting}>
                 {submitting ? 'Menyimpan...' : 'Simpan Setting'}
@@ -467,6 +471,7 @@ export default function AttendancePage() {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

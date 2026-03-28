@@ -5,6 +5,7 @@ import { tablesApi } from '@/lib/api';
 import { asArray } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Plus, Edit2, Trash2, X, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import ModalPortal from '@/components/shared/ModalPortal';
 
 interface Table {
   id: string;
@@ -175,13 +176,14 @@ export default function DeveloperTablesPage() {
 
       {/* Modal */}
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-          <div className="card" style={{ width: '100%', maxWidth: 420 }}>
-            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <ModalPortal>
+        <div className="modal-overlay">
+          <div className="modal-card modal-sm">
+            <div className="modal-header">
               <h3 className="card-title">{editId ? 'Edit Meja' : 'Tambah Meja'}</h3>
               <button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={18} /></button>
             </div>
-            <div className="card-body">
+            <div className="modal-body">
               <div className="form-group">
                 <label className="form-label">Nama Meja <span className="required">*</span></label>
                 <input className="form-input" placeholder="contoh: Meja 1" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
@@ -204,7 +206,7 @@ export default function DeveloperTablesPage() {
                 </div>
               )}
             </div>
-            <div className="card-footer" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <div className="modal-footer">
               <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Batal</button>
               <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting}>
                 {submitting ? 'Menyimpan...' : 'Simpan'}
@@ -212,6 +214,7 @@ export default function DeveloperTablesPage() {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { menuApi, stockApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Plus, Edit2, Trash2, X, Search, Boxes } from 'lucide-react';
+import ModalPortal from '@/components/shared/ModalPortal';
 import { asArray, formatRupiah } from '@/lib/utils';
 
 interface MenuItem { id: string; sku: string; name: string; category: string; price: string; cost?: string; isActive: boolean; stock?: { qtyOnHand: number }; }
@@ -144,10 +145,11 @@ export default function MenuPage({ canEdit = true }: Props) {
         </div>
       </div>
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-          <div className="card" style={{ width: '100%', maxWidth: 440 }}>
-            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}><h3 className="card-title">{editId ? 'Edit Menu' : 'Tambah Menu'}</h3><button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={18} /></button></div>
-            <div className="card-body">
+        <ModalPortal>
+        <div className="modal-overlay">
+          <div className="modal-card modal-sm">
+            <div className="modal-header"><h3 className="card-title">{editId ? 'Edit Menu' : 'Tambah Menu'}</h3><button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={18} /></button></div>
+            <div className="modal-body">
               {(['name', 'price', 'cost'] as const).map(f => (
                 <div key={f} className="form-group">
                   <label className="form-label">{f === 'name' ? 'Nama Menu' : f === 'price' ? 'Harga Jual (Rp)' : 'Harga Modal / HPP (opsional)'}</label>
@@ -165,21 +167,23 @@ export default function MenuPage({ canEdit = true }: Props) {
                 <select className="form-select" value={form.isActive ? 'true' : 'false'} onChange={e => setForm(p => ({ ...p, isActive: e.target.value === 'true' }))}><option value="true">Aktif</option><option value="false">Nonaktif</option></select>
               </div>
             </div>
-            <div className="card-footer" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <div className="modal-footer">
               <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Batal</button>
               <button className="btn btn-primary" onClick={handleSave} disabled={busy}>{busy ? 'Menyimpan...' : 'Simpan'}</button>
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
       {stockItem && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-          <div className="card" style={{ width: '100%', maxWidth: 460 }}>
-            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <ModalPortal>
+        <div className="modal-overlay">
+          <div className="modal-card modal-sm">
+            <div className="modal-header">
               <h3 className="card-title">Modifikasi Stok — {stockItem.name}</h3>
               <button className="btn btn-ghost btn-icon" onClick={closeStockModal}><X size={18} /></button>
             </div>
-            <div className="card-body">
+            <div className="modal-body">
               <div className="form-group">
                 <label className="form-label">Stok saat ini</label>
                 <div style={{ fontWeight: 700 }}>{stockItem.stock?.qtyOnHand ?? 0}</div>
@@ -213,7 +217,7 @@ export default function MenuPage({ canEdit = true }: Props) {
                 />
               </div>
             </div>
-            <div className="card-footer" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <div className="modal-footer">
               <button className="btn btn-ghost" onClick={closeStockModal}>Batal</button>
               <button className="btn btn-primary" onClick={submitStockAdjustment} disabled={stockBusy}>
                 {stockBusy ? 'Menyimpan...' : 'Simpan'}
@@ -221,6 +225,7 @@ export default function MenuPage({ canEdit = true }: Props) {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

@@ -4,6 +4,7 @@ import { menuApi } from '@/lib/api';
 import { asArray } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import ModalPortal from '@/components/shared/ModalPortal';
 
 interface Cat { id: string; name: string; skuPrefix: string; lastSkuNumber: number; }
 
@@ -58,19 +59,21 @@ export default function Page() {
         </tbody>
       </table></div></div>
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-          <div className="card" style={{ width: '100%', maxWidth: 380 }}>
-            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}><h3 className="card-title">{editId ? 'Edit Kategori' : 'Tambah Kategori'}</h3><button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={18} /></button></div>
-            <div className="card-body">
+        <ModalPortal>
+        <div className="modal-overlay">
+          <div className="modal-card modal-sm">
+            <div className="modal-header"><h3 className="card-title">{editId ? 'Edit Kategori' : 'Tambah Kategori'}</h3><button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={18} /></button></div>
+            <div className="modal-body">
               <div className="form-group"><label className="form-label">Nama Kategori</label><input className="form-input" value={name} onChange={e => setName(e.target.value)} /></div>
               <div className="form-group"><label className="form-label">SKU Prefix (2-4 huruf)</label><input className="form-input" value={prefix} onChange={e => setPrefix(e.target.value.toUpperCase())} maxLength={4} placeholder="contoh: MKN" /></div>
             </div>
-            <div className="card-footer" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <div className="modal-footer">
               <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Batal</button>
               <button className="btn btn-primary" onClick={handleSave} disabled={busy}>{busy ? 'Menyimpan...' : 'Simpan'}</button>
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

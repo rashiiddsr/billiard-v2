@@ -9,6 +9,7 @@ import {
   Plus, Clock, PhoneCall, CheckCheck, X, Search,
   User, Users, Trash2, RefreshCw,
 } from 'lucide-react';
+import ModalPortal from '@/components/shared/ModalPortal';
 
 interface WaitingEntry {
   id: string;
@@ -243,19 +244,16 @@ export default function WaitingListPage() {
 
       {/* Modal tambah antrian */}
       {showModal && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 9999, padding: 20,
-        }}>
-          <div className="card" style={{ width: '100%', maxWidth: 480 }}>
-            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <ModalPortal>
+        <div className="modal-overlay">
+          <div className="modal-card modal-md">
+            <div className="modal-header">
               <h3 className="card-title">Tambah ke Antrian</h3>
               <button className="btn btn-ghost btn-icon" onClick={() => { setShowModal(false); resetForm(); }}>
                 <X size={18} />
               </button>
             </div>
-            <div className="card-body">
+            <div className="modal-body">
               {/* Tipe: Guest vs Member */}
               <div className="form-group">
                 <label className="form-label">Tipe Tamu</label>
@@ -380,7 +378,7 @@ export default function WaitingListPage() {
               </div>
             </div>
 
-            <div className="card-footer" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <div className="modal-footer">
               <button className="btn btn-ghost" onClick={() => { setShowModal(false); resetForm(); }}>
                 Batal
               </button>
@@ -390,6 +388,7 @@ export default function WaitingListPage() {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

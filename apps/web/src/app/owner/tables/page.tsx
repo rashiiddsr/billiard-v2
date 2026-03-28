@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { tablesApi } from '@/lib/api';
+import ModalPortal from '@/components/shared/ModalPortal';
 import { asArray, formatRupiah } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Plus, Edit2, X, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
@@ -137,13 +138,14 @@ export default function OwnerTablesPage() {
       </div>
 
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-          <div className="card" style={{ width: '100%', maxWidth: 420 }}>
-            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <ModalPortal>
+        <div className="modal-overlay">
+          <div className="modal-card modal-sm">
+            <div className="modal-header">
               <h3 className="card-title">{mode === 'create' ? 'Tambah Meja Baru' : 'Edit Meja'}</h3>
               <button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={18} /></button>
             </div>
-            <div className="card-body">
+            <div className="modal-body">
               {mode === 'create' && (
                 <div className="form-group">
                   <label className="form-label">Nama Meja</label>
@@ -154,12 +156,13 @@ export default function OwnerTablesPage() {
               <div className="form-group"><label className="form-label">Status</label><select className="form-select" value={status} onChange={e => setStatus(e.target.value as Table['status'])}>{statusOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
               <div className="form-group"><label className="form-label">Status Aktif</label><select className="form-select" value={active ? 'true' : 'false'} onChange={e => setActive(e.target.value === 'true')}><option value="true">Aktif</option><option value="false">Nonaktif</option></select></div>
             </div>
-            <div className="card-footer" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <div className="modal-footer">
               <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Batal</button>
               <button className="btn btn-primary" onClick={handleSave} disabled={busy}>{busy ? 'Menyimpan...' : 'Simpan'}</button>
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );
