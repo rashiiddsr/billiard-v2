@@ -144,7 +144,7 @@ export default function MenuPage({ canEdit = true }: Props) {
         </div>
       </div>
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
+        <div className="modal-backdrop">
           <div className="card" style={{ width: '100%', maxWidth: 440, maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}><h3 className="card-title">{editId ? 'Edit Menu' : 'Tambah Menu'}</h3><button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={18} /></button></div>
             <div className="card-body">
@@ -173,7 +173,7 @@ export default function MenuPage({ canEdit = true }: Props) {
         </div>
       )}
       {stockItem && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
+        <div className="modal-backdrop">
           <div className="card" style={{ width: '100%', maxWidth: 460, maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
               <h3 className="card-title">Modifikasi Stok — {stockItem.name}</h3>

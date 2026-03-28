@@ -173,7 +173,7 @@ export default function BillingPage() {
   };
 
   const Overlay = ({ children }: { children: React.ReactNode }) => (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.35)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, padding:20 }}>
+    <div className="modal-backdrop">
       {children}
     </div>
   );

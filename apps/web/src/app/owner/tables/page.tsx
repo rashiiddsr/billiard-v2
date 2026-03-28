@@ -137,7 +137,7 @@ export default function OwnerTablesPage() {
       </div>
 
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
+        <div className="modal-backdrop">
           <div className="card" style={{ width: '100%', maxWidth: 420, maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
               <h3 className="card-title">{mode === 'create' ? 'Tambah Meja Baru' : 'Edit Meja'}</h3>

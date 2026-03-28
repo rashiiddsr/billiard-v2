@@ -233,7 +233,7 @@ export default function CashierOrdersPage() {
       </div>
 
       {showPaymentPopup && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
+        <div className="modal-backdrop">
           <div className="card card-padded" style={{ width: '100%', maxWidth: 460, maxHeight: '90vh', overflowY: 'auto' }}>
             <h3 className="card-title mb-4">Checkout F&B Standalone</h3>
             <div style={{ marginBottom: 14, display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>

@@ -383,7 +383,7 @@ export default function AttendancePage() {
 
       {/* Modal Shift */}
       {showShiftModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
+        <div className="modal-backdrop">
           <div className="card" style={{ width: '100%', maxWidth: 440, maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 className="card-title">{editShiftId ? 'Edit Shift' : 'Tambah Shift'}</h3>
@@ -429,7 +429,7 @@ export default function AttendancePage() {
 
       {/* Modal Setting */}
       {showSettingModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
+        <div className="modal-backdrop">
           <div className="card" style={{ width: '100%', maxWidth: 440, maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 className="card-title">Setting Lokasi Absensi</h3>
