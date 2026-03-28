@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { Eye, EyeOff, Loader2, ArrowRight, MapPin } from 'lucide-react';
+import { Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
 
 const HOME_MAP: Record<string, string> = {
   OWNER:   '/owner/dashboard',
@@ -65,7 +65,7 @@ export default function LoginPage() {
             fontSize: 26, boxShadow: '0 8px 24px rgba(44,20,0,0.3)',
           }}>🎱</div>
           <div className="login-brand-name">Billiard POS</div>
-          <div className="login-brand-sub">Premium Management System</div>
+          <div className="login-brand-sub">Management System</div>
           <div className="login-divider" />
         </div>
 
@@ -118,11 +118,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(0,0,0,0.07)', textAlign: 'center' }}>
-          <a href="/attendance" style={{ fontSize: 13, color: 'var(--color-text-muted)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, transition: 'color 0.15s' }}>
-            <MapPin size={13} /> Halaman Absensi Karyawan
-          </a>
-        </div>
       </div>
 
       <style>{`

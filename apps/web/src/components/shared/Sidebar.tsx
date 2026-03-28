@@ -93,6 +93,7 @@ const navConfig: Record<string, NavGroup[]> = {
         { label: 'Antrian', href: '/cashier/waiting-list', icon: ListOrdered },
         { label: 'Transaksi', href: '/cashier/transactions', icon: ScrollText },
         { label: 'Member', href: '/cashier/members', icon: Users },
+        { label: 'Absensi', href: '/cashier/attendance', icon: CalendarCheck },
       ],
     },
   ],
@@ -174,18 +175,6 @@ export default function Sidebar() {
           </div>
         ))}
 
-        {['CASHIER', 'MANAGER'].includes(user.role) && (
-          <div className="sidebar-section">
-            <div className="sidebar-section-label">Absensi</div>
-            <Link
-              href="/attendance"
-              className={`sidebar-item ${pathname === '/attendance' ? 'active' : ''}`}
-            >
-              <CalendarCheck className="icon" size={17} />
-              <span style={{ flex: 1 }}>Absen Sekarang</span>
-            </Link>
-          </div>
-        )}
       </nav>
 
       <div className="sidebar-footer">

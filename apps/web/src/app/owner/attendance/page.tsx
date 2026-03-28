@@ -12,12 +12,12 @@ import ModalPortal from '@/components/shared/ModalPortal';
 
 interface AttendanceRecord {
   id: string;
-  checkInAt: string;
+  checkInAt: string | null;
   distanceMeters: number | null;
-  status: 'ON_TIME' | 'LATE' | 'EARLY' | 'REJECTED';
+  status: 'ON_TIME' | 'LATE' | 'EARLY' | 'REJECTED' | 'ABSENT' | 'EXCUSED';
   notes: string | null;
   user: { id: string; name: string; role: string };
-  shift: { id: string; name: string; startTime: string; endTime: string };
+  shift: { id: string; name: string; startTime: string; endTime: string } | null;
 }
 
 interface WorkShift {
@@ -44,6 +44,8 @@ const statusBadge = {
   LATE:     { label: 'Terlambat',   cls: 'badge-warning',  icon: AlertTriangle },
   EARLY:    { label: 'Terlalu Awal', cls: 'badge-info',    icon: Clock },
   REJECTED: { label: 'Ditolak',     cls: 'badge-danger',   icon: XCircle },
+  ABSENT:   { label: 'Tidak Hadir', cls: 'badge-danger',   icon: XCircle },
+  EXCUSED:  { label: 'Tidak Hadir (Izin/Sakit)', cls: 'badge-warning', icon: AlertTriangle },
 };
 
 export default function AttendancePage() {
@@ -76,9 +78,7 @@ export default function AttendancePage() {
   const loadRecords = useCallback(async () => {
     setLoading(true);
     try {
-      const startDate = `${filterDate}T00:00:00`;
-      const endDate   = `${filterDate}T23:59:59`;
-      const res = await api.get('/attendance/records', { params: { startDate, endDate, limit: 100 } });
+      const res = await api.get('/attendance/reports/daily', { params: { date: filterDate } });
       setRecords(res.data.data);
     } catch {
       toast.error('Gagal memuat absensi');
@@ -106,7 +106,7 @@ export default function AttendancePage() {
   // Stats for the day
   const onTime   = records.filter((r) => r.status === 'ON_TIME').length;
   const late     = records.filter((r) => r.status === 'LATE').length;
-  const rejected = records.filter((r) => r.status === 'REJECTED').length;
+  const absent = records.filter((r) => ['ABSENT', 'EXCUSED'].includes(r.status)).length;
 
   // Shift CRUD
   const openCreateShift = () => {
@@ -230,8 +230,8 @@ export default function AttendancePage() {
             </div>
             <div className="stat-card">
               <div className="stat-card-icon"><XCircle size={20} /></div>
-              <div className="stat-card-value" style={{ color: 'var(--color-danger)' }}>{rejected}</div>
-              <div className="stat-card-label">Ditolak</div>
+              <div className="stat-card-value" style={{ color: 'var(--color-danger)' }}>{absent}</div>
+              <div className="stat-card-label">Tidak Hadir</div>
             </div>
           </div>
 
@@ -277,11 +277,11 @@ export default function AttendancePage() {
                           <div style={{ fontSize: 11, color: 'var(--color-text-muted)', textTransform: 'capitalize' }}>{r.user.role.toLowerCase()}</div>
                         </td>
                         <td>
-                          <div style={{ fontWeight: 500 }}>{r.shift.name}</div>
-                          <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>{r.shift.startTime}–{r.shift.endTime}</div>
+                          <div style={{ fontWeight: 500 }}>{r.shift?.name || '-'}</div>
+                          <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>{r.shift ? `${r.shift.startTime}–${r.shift.endTime}` : '-'}</div>
                         </td>
                         <td style={{ fontFamily: 'monospace', fontSize: 14 }}>
-                          {new Date(r.checkInAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          {r.checkInAt ? new Date(r.checkInAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}
                         </td>
                         <td style={{ fontSize: 13 }}>
                           {r.distanceMeters !== null ? `${r.distanceMeters}m` : '—'}
