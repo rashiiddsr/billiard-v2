@@ -217,4 +217,12 @@ export class AttendanceController {
   reviewLeave(@Param('id') id: string, @Body() dto: ReviewLeaveDto, @CurrentUser() user: any) {
     return this.attendanceService.reviewLeaveRequest(id, user.id, dto);
   }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @ApiBearerAuth()
+  @Delete('leave-requests/:id')
+  @Roles('OWNER' as any, 'MANAGER' as any)
+  deleteLeave(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.attendanceService.deleteLeaveRequest(id, user.id);
+  }
 }
