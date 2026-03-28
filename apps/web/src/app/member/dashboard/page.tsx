@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
+import { api, waitingListApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { Clock, CreditCard, Calendar, Hash } from 'lucide-react';
+import { Clock, CreditCard, Calendar, Hash, ListOrdered, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
 interface Session {
   id: string;
@@ -21,6 +22,7 @@ interface Session {
 export default function MemberDashboard() {
   const { user } = useAuth();
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [waitingStatus, setWaitingStatus] = useState<'WAITING' | 'CALLED' | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,6 +30,16 @@ export default function MemberDashboard() {
       .then((r) => setSessions(r.data.data))
       .catch(() => {})
       .finally(() => setLoading(false));
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    waitingListApi.list()
+      .then((rows) => {
+        const mine = (Array.isArray(rows) ? rows : []).find((item: any) => item.member?.id === user.id);
+        setWaitingStatus(mine?.status || null);
+      })
+      .catch(() => setWaitingStatus(null));
   }, [user]);
 
   const formatDuration = (mins: number) => {
@@ -53,6 +65,26 @@ export default function MemberDashboard() {
           </div>
           <div className="member-number">{user?.memberNumber || '—'}</div>
           <div style={{ marginTop: 16, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>Kartu Member Billiard</div>
+        </div>
+      </div>
+
+      <div className="grid-2 mb-6">
+        <div className="card card-padded">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <ListOrdered size={16} />
+            <strong>Status Antrian</strong>
+          </div>
+          <div style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
+            {waitingStatus ? `Anda sedang ${waitingStatus === 'CALLED' ? 'dipanggil' : 'menunggu'}.` : 'Tidak ada antrian aktif.'}
+          </div>
+          <Link href="/member/waiting-list" className="btn btn-ghost btn-sm" style={{ marginTop: 12 }}>
+            Lihat Antrian <ArrowRight size={13} />
+          </Link>
+        </div>
+        <div className="card card-padded">
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>Ringkasan Member</div>
+          <div style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Total sesi tercatat</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--color-primary)' }}>{sessions.length}</div>
         </div>
       </div>
 

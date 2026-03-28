@@ -10,9 +10,12 @@ import { WaitingStatus } from '@prisma/client';
 export class WaitingListService {
   constructor(private prisma: PrismaService) {}
 
-  async list(status?: WaitingStatus) {
+  async list(status?: WaitingStatus, memberId?: string) {
     return this.prisma.waitingList.findMany({
-      where: status ? { status } : { status: { in: ['WAITING', 'CALLED'] } },
+      where: {
+        ...(status ? { status } : { status: { in: ['WAITING', 'CALLED'] } }),
+        ...(memberId ? { memberId } : {}),
+      },
       include: {
         member: { select: { id: true, name: true, memberNumber: true, phoneNumber: true } },
         preferredTable: { select: { id: true, name: true, status: true } },

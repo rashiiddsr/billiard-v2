@@ -12,7 +12,7 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { TableStatus } from '@prisma/client';
 
 class SetStatusDto {
-  @IsIn(['AVAILABLE', 'OCCUPIED', 'MAINTENANCE'])
+  @IsIn(['AVAILABLE', 'OCCUPIED'])
   status: TableStatus;
 }
 

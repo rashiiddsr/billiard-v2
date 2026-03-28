@@ -101,8 +101,9 @@ const navConfig: Record<string, NavGroup[]> = {
     {
       label: 'Utama',
       items: [
-        { label: 'Dashboard', href: '/owner/dashboard', icon: LayoutDashboard },
-        { label: 'Meja Billiard', href: '/owner/tables', icon: ClipboardList },
+        { label: 'Dashboard', href: '/member/dashboard', icon: LayoutDashboard },
+        { label: 'Antrian', href: '/member/waiting-list', icon: ListOrdered },
+        { label: 'Riwayat', href: '/member/history', icon: ScrollText },
       ],
     },
   ],
@@ -131,7 +132,7 @@ export default function Sidebar() {
 
   const groups = navConfig[user.role] || [];
   const profileHref = user.role === 'MEMBER'
-    ? '/owner/profile'
+    ? '/member/profile'
     : `/${user.role.toLowerCase()}/profile`;
   const isProfileActive = pathname === profileHref || pathname.startsWith(`${profileHref}/`);
 

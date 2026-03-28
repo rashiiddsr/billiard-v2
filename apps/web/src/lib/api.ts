@@ -168,11 +168,18 @@ export const membersApi = {
       const res = await api.patch(`/members/${id}/reset-credentials`, data || {});
       return res.data;
     } catch (err: any) {
-      if (err?.response?.status === 404 || String(err?.response?.data || '').includes('Cannot PATCH')) {
-        return api.post(`/members/${id}/reset-credentials`, data || {}).then((r) => r.data);
-      }
       if (err?.response?.status === 403) {
         return api.patch(`/members/${id}/cashier-reset`, data || {}).then((r) => r.data);
+      }
+      if (err?.response?.status === 404 || String(err?.response?.data || '').includes('Cannot PATCH')) {
+        try {
+          return await api.post(`/members/${id}/reset-credentials`, data || {}).then((r) => r.data);
+        } catch (postErr: any) {
+          if (postErr?.response?.status === 404) {
+            return api.post(`/members/${id}/credentials/reset`, data || {}).then((r) => r.data);
+          }
+          throw postErr;
+        }
       }
       throw err;
     }

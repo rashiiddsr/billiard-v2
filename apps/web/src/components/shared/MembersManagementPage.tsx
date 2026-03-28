@@ -38,7 +38,6 @@ export default function MembersManagementPage() {
 
   const [credentialResult, setCredentialResult] = useState<Credentials | null>(null);
   const [resetTarget, setResetTarget] = useState<Member | null>(null);
-  const [resetEmail, setResetEmail] = useState('');
   const [detailMember, setDetailMember] = useState<any | null>(null);
 
   const load = useCallback(async () => {
@@ -96,7 +95,6 @@ export default function MembersManagementPage() {
   const openReset = (m: Member) => {
     setShowModal(true);
     setResetTarget(m);
-    setResetEmail(m.email);
     setCredentialResult(null);
     setEditId(null);
     setDetailMember(null);
@@ -138,7 +136,7 @@ export default function MembersManagementPage() {
     if (!resetTarget) return;
     setSubmitting(true);
     try {
-      const res = await membersApi.resetCredentials(resetTarget.id, { email: resetEmail.trim() || undefined });
+      const res = await membersApi.resetCredentials(resetTarget.id);
       setCredentialResult(res.credentials);
       toast.success('Reset akun member berhasil');
       await load();
@@ -277,11 +275,11 @@ export default function MembersManagementPage() {
                 <div className="modal-body">
                   <div className="form-group">
                     <label className="form-label">Nama Member</label>
-                    <input className="form-input" value={resetTarget.name} disabled />
+                    <input className="form-input" value={resetTarget.name} readOnly />
                   </div>
                   <div className="form-group">
                     <label className="form-label">Email Login</label>
-                    <input className="form-input" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} />
+                    <input className="form-input" value={resetTarget.email} readOnly />
                   </div>
                   <div className="alert alert-info">Password default baru akan di-generate otomatis saat reset.</div>
                 </div>

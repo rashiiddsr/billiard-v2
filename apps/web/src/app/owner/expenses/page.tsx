@@ -14,8 +14,17 @@ export default function ExpensesPage() {
   const [form, setForm] = useState({ category: '', date: new Date().toISOString().split('T')[0], amount: '', notes: '' });
   const [busy, setBusy] = useState(false);
   const [filterDate, setFilterDate] = useState('');
+  const [categories, setCategories] = useState<string[]>([]);
 
-  const cats = ['Listrik', 'Air', 'Gaji', 'Bahan Baku', 'Perawatan', 'Transportasi', 'Lain-lain'];
+  const categoryStyle: Record<string, { background: string; color: string; border: string }> = {
+    Operasional:  { background: '#EEF2FF', color: '#4338CA', border: '#C7D2FE' },
+    Gaji:         { background: '#ECFDF5', color: '#047857', border: '#A7F3D0' },
+    Listrik:      { background: '#FEF3C7', color: '#B45309', border: '#FDE68A' },
+    Air:          { background: '#E0F2FE', color: '#0369A1', border: '#BAE6FD' },
+    Perlengkapan: { background: '#F3E8FF', color: '#7E22CE', border: '#E9D5FF' },
+    Perawatan:    { background: '#FFE4E6', color: '#BE123C', border: '#FECDD3' },
+    Lainnya:      { background: '#F3F4F6', color: '#374151', border: '#E5E7EB' },
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -28,12 +37,18 @@ export default function ExpensesPage() {
   }, [filterDate]);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    financeApi.expenseCategories()
+      .then((res) => setCategories(asArray(res)))
+      .catch(() => setCategories([]));
+  }, []);
 
-  const openCreate = () => { setEditId(null); setForm({ category: cats[0], date: new Date().toISOString().split('T')[0], amount: '', notes: '' }); setShowModal(true); };
+  const openCreate = () => { setEditId(null); setForm({ category: categories[0] || 'Operasional', date: new Date().toISOString().split('T')[0], amount: '', notes: '' }); setShowModal(true); };
   const openEdit = (e: any) => { setEditId(e.id); setForm({ category: e.category, date: e.date.split('T')[0], amount: e.amount, notes: e.notes || '' }); setShowModal(true); };
 
   const handleSave = async () => {
     if (!form.amount || Number(form.amount) <= 0) { toast.error('Jumlah tidak valid'); return; }
+    if (!form.notes.trim()) { toast.error('Catatan pengeluaran wajib diisi'); return; }
     setBusy(true);
     try {
       const data = { ...form, amount: Number(form.amount), date: new Date(form.date).toISOString() };
@@ -71,7 +86,11 @@ export default function ExpensesPage() {
           : expenses.map((e: any) => (
             <tr key={e.id}>
               <td style={{ fontSize: 12 }}>{formatDate(e.date)}</td>
-              <td><span className="badge badge-neutral">{e.category}</span></td>
+              <td>
+                <span className="badge" style={{ ...categoryStyle[e.category], borderWidth: 1, borderStyle: 'solid' }}>
+                  {e.category}
+                </span>
+              </td>
               <td style={{ fontWeight: 700 }}>{formatRupiah(e.amount)}</td>
               <td style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{e.notes || '—'}</td>
               <td><div style={{ display: 'flex', gap: 4 }}>
@@ -88,10 +107,10 @@ export default function ExpensesPage() {
           <div className="modal-card modal-sm">
             <div className="modal-header"><h3 className="card-title">{editId ? 'Edit' : 'Catat'} Pengeluaran</h3><button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={18} /></button></div>
             <div className="modal-body">
-              <div className="form-group"><label className="form-label">Kategori</label><select className="form-select" value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}>{cats.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+              <div className="form-group"><label className="form-label">Kategori</label><select className="form-select" value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}>{categories.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
               <div className="form-group"><label className="form-label">Tanggal</label><input type="date" className="form-input" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} /></div>
               <div className="form-group"><label className="form-label">Jumlah (Rp)</label><input type="number" className="form-input" value={form.amount} onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} placeholder="0" /></div>
-              <div className="form-group"><label className="form-label">Catatan</label><input className="form-input" value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Opsional" /></div>
+              <div className="form-group"><label className="form-label">Catatan <span className="required">*</span></label><input className="form-input" value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Wajib diisi" /></div>
             </div>
             <div className="modal-footer">
               <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Batal</button>
