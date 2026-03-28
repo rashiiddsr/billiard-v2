@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MonitorSmartphone, Copy, ExternalLink, BellRing, UploadCloud } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -9,6 +9,18 @@ export default function OwnerWaitingDisplayPage() {
   const [refreshMs, setRefreshMs] = useState(10000);
   const [modalMs, setModalMs] = useState(7000);
   const [images, setImages] = useState<string[]>([]);
+  const [openHour, setOpenHour] = useState('10:00');
+  const [closeHour, setCloseHour] = useState('23:00');
+
+  useEffect(() => {
+    const op = localStorage.getItem('company-operational-hours');
+    if (!op) return;
+    try {
+      const parsed = JSON.parse(op);
+      if (parsed?.openHour) setOpenHour(parsed.openHour);
+      if (parsed?.closeHour) setCloseHour(parsed.closeHour);
+    } catch {}
+  }, []);
 
   const displayUrl = useMemo(() => {
     if (typeof window === 'undefined') return '';
@@ -16,20 +28,20 @@ export default function OwnerWaitingDisplayPage() {
       marquee,
       refreshMs: String(refreshMs),
       modalMs: String(modalMs),
+      openHour,
+      closeHour,
     });
 
     if (images.length) params.set('media', images.join(','));
-    const op = localStorage.getItem('company-operational-hours');
-    if (op) {
-      try {
-        const parsed = JSON.parse(op);
-        if (parsed.openHour) params.set('openHour', parsed.openHour);
-        if (parsed.closeHour) params.set('closeHour', parsed.closeHour);
-      } catch {}
-    }
 
     return `${window.location.origin}/display/waiting-list?${params.toString()}`;
-  }, [marquee, refreshMs, modalMs, images]);
+  }, [marquee, refreshMs, modalMs, images, openHour, closeHour]);
+
+  const attendanceDisplayUrl = useMemo(() => {
+    if (typeof window === 'undefined') return '';
+    const params = new URLSearchParams({ openHour, closeHour });
+    return `${window.location.origin}/display/attendance?${params.toString()}`;
+  }, [openHour, closeHour]);
 
   const handleCopy = async () => {
     if (!displayUrl) return;
@@ -96,9 +108,24 @@ export default function OwnerWaitingDisplayPage() {
             </div>
           </div>
 
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">Jam Operasional Buka</label>
+              <input className="form-input" type="time" value={openHour} onChange={(e) => setOpenHour(e.target.value)} />
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">Jam Operasional Tutup</label>
+              <input className="form-input" type="time" value={closeHour} onChange={(e) => setCloseHour(e.target.value)} />
+            </div>
+          </div>
+
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label">Link Display TV</label>
             <input className="form-input" value={displayUrl} readOnly />
+          </div>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Link Display Absensi</label>
+            <input className="form-input" value={attendanceDisplayUrl} readOnly />
           </div>
 
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
