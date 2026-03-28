@@ -31,9 +31,10 @@ export class WaitingListController {
   @Get()
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiBearerAuth()
-  @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any)
-  list(@Query('status') status?: WaitingStatus) {
-    return this.svc.list(status);
+  @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any, 'MEMBER' as any)
+  list(@Query('status') status?: WaitingStatus, @CurrentUser() user?: any) {
+    const onlyMemberId = user?.role === 'MEMBER' ? user.id : undefined;
+    return this.svc.list(status, onlyMemberId);
   }
 
   @Post()

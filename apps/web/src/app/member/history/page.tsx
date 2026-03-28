@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { Clock, CreditCard, Calendar, ChevronRight, Filter } from 'lucide-react';
+import { Clock, CreditCard, Calendar, Filter, Eye, X } from 'lucide-react';
+import ModalPortal from '@/components/shared/ModalPortal';
 
 interface Session {
   id: string;
@@ -45,6 +46,7 @@ export default function MemberHistoryPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [filterStatus, setFilterStatus] = useState('');
+  const [detail, setDetail] = useState<Session | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -166,6 +168,13 @@ export default function MemberHistoryPage() {
                   {s.status === 'ACTIVE' && (
                     <div style={{ fontSize: 11, color: 'var(--color-warning)', fontWeight: 600 }}>Berjalan</div>
                   )}
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    style={{ marginTop: 8 }}
+                    onClick={() => setDetail(s)}
+                  >
+                    <Eye size={13} /> Detail
+                  </button>
                 </div>
               </div>
             );
@@ -186,6 +195,30 @@ export default function MemberHistoryPage() {
             </button>
           ))}
         </div>
+      )}
+
+      {detail && (
+        <ModalPortal>
+          <div className="modal-overlay">
+            <div className="modal-card modal-sm">
+              <div className="modal-header">
+                <h3 className="card-title">Detail Riwayat</h3>
+                <button className="btn btn-ghost btn-icon" onClick={() => setDetail(null)}><X size={16} /></button>
+              </div>
+              <div className="modal-body" style={{ display: 'grid', gap: 8 }}>
+                <div><strong>Meja:</strong> {detail.table?.name}</div>
+                <div><strong>Status:</strong> {statusLabel[detail.status]}</div>
+                <div><strong>Mulai:</strong> {new Date(detail.startTime).toLocaleString('id-ID')}</div>
+                <div><strong>Durasi:</strong> {formatDuration(detail.durationMinutes)}</div>
+                <div><strong>Tipe tarif:</strong> {rateTypeLabel[detail.rateType] || detail.rateType}</div>
+                <div><strong>Total:</strong> Rp {Number(detail.totalAmount).toLocaleString('id-ID')}</div>
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-primary" onClick={() => setDetail(null)}>Tutup</button>
+              </div>
+            </div>
+          </div>
+        </ModalPortal>
       )}
     </div>
   );

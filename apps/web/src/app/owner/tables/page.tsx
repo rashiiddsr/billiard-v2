@@ -4,22 +4,16 @@ import { tablesApi } from '@/lib/api';
 import ModalPortal from '@/components/shared/ModalPortal';
 import { asArray, formatRupiah } from '@/lib/utils';
 import toast from 'react-hot-toast';
-import { Plus, Edit2, X, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Plus, Edit2, X, CheckCircle, Clock } from 'lucide-react';
 
 interface Table {
   id: string;
   name: string;
   description?: string;
   hourlyRate: string;
-  status: 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE';
+  status: 'AVAILABLE' | 'OCCUPIED';
   isActive: boolean;
 }
-
-const statusOptions: Array<{ value: Table['status']; label: string }> = [
-  { value: 'AVAILABLE', label: 'Tersedia' },
-  { value: 'OCCUPIED', label: 'Terpakai' },
-  { value: 'MAINTENANCE', label: 'Maintenance' },
-];
 
 export default function OwnerTablesPage() {
   const [tables, setTables] = useState<Table[]>([]);
@@ -29,7 +23,6 @@ export default function OwnerTablesPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [rate, setRate] = useState('');
-  const [status, setStatus] = useState<Table['status']>('AVAILABLE');
   const [active, setActive] = useState(true);
   const [busy, setBusy] = useState(false);
 
@@ -48,7 +41,6 @@ export default function OwnerTablesPage() {
     setEditId(null);
     setName('');
     setRate('');
-    setStatus('AVAILABLE');
     setActive(true);
   };
 
@@ -63,7 +55,6 @@ export default function OwnerTablesPage() {
     setEditId(t.id);
     setName(t.name);
     setRate(t.hourlyRate);
-    setStatus(t.status);
     setActive(t.isActive);
     setShowModal(true);
   };
@@ -84,12 +75,11 @@ export default function OwnerTablesPage() {
         await tablesApi.create({
           name: name.trim(),
           hourlyRate: Number(rate),
-          status,
           isActive: active,
         });
         toast.success('Meja baru ditambahkan');
       } else {
-        await tablesApi.update(editId!, { hourlyRate: Number(rate), isActive: active, status });
+        await tablesApi.update(editId!, { hourlyRate: Number(rate), isActive: active });
         toast.success('Meja diperbarui');
       }
       setShowModal(false);
@@ -104,9 +94,8 @@ export default function OwnerTablesPage() {
   const statusIcon = {
     AVAILABLE: <CheckCircle size={13} style={{ color: 'var(--color-success)' }} />,
     OCCUPIED: <Clock size={13} style={{ color: 'var(--color-warning)' }} />,
-    MAINTENANCE: <AlertTriangle size={13} style={{ color: 'var(--color-warning)' }} />,
   };
-  const statusCls = { AVAILABLE: 'badge-success', OCCUPIED: 'badge-warning', MAINTENANCE: 'badge-neutral' };
+  const statusCls = { AVAILABLE: 'badge-success', OCCUPIED: 'badge-warning' };
 
   return (
     <div>
@@ -153,7 +142,6 @@ export default function OwnerTablesPage() {
                 </div>
               )}
               <div className="form-group"><label className="form-label">Tarif per Jam (Rp)</label><input type="number" className="form-input" min={0} value={rate} onChange={e => setRate(e.target.value)} /></div>
-              <div className="form-group"><label className="form-label">Status</label><select className="form-select" value={status} onChange={e => setStatus(e.target.value as Table['status'])}>{statusOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
               <div className="form-group"><label className="form-label">Status Aktif</label><select className="form-select" value={active ? 'true' : 'false'} onChange={e => setActive(e.target.value === 'true')}><option value="true">Aktif</option><option value="false">Nonaktif</option></select></div>
             </div>
             <div className="modal-footer">

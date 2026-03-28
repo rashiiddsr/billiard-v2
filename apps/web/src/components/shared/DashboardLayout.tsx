@@ -16,7 +16,7 @@ const HOME_MAP: Record<string, string> = {
   OWNER:   '/owner/dashboard',
   MANAGER: '/manager/dashboard',
   CASHIER: '/cashier/dashboard',
-  MEMBER:  '/owner/dashboard',
+  MEMBER:  '/member/dashboard',
 };
 
 const roleLabels: Record<string, string> = {

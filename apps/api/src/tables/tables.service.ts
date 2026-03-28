@@ -20,7 +20,6 @@ export class CreateTableDto {
   @IsString() name: string;
   @IsOptional() @IsString() description?: string;
   @IsNumber() @Min(0) hourlyRate: number;
-  @IsOptional() @IsString() status?: TableStatus;
   @IsOptional() @IsBoolean() isActive?: boolean;
 }
 
@@ -29,7 +28,6 @@ export class UpdateTableDto {
   @IsOptional() @IsString() description?: string;
   @IsOptional() @IsNumber() @Min(0) hourlyRate?: number;
   @IsOptional() @IsBoolean() isActive?: boolean;
-  @IsOptional() @IsString() status?: TableStatus;
 }
 
 @Injectable()
@@ -88,7 +86,7 @@ export class TablesService {
         name: dto.name,
         description: dto.description,
         hourlyRate: dto.hourlyRate,
-        ...(dto.status ? { status: dto.status } : {}),
+        status: TableStatus.AVAILABLE,
         ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
       },
     });

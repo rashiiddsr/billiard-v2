@@ -18,7 +18,7 @@ export class CreateExpenseDto {
   @IsString() @IsIn(EXPENSE_CATEGORIES as unknown as string[]) category: string;
   @IsDateString() date: string;
   @IsNumber() @Min(0) amount: number;
-  @IsOptional() @IsString() notes?: string;
+  @IsString() notes: string;
   @IsOptional() @IsString() proofUrl?: string;
 }
 
@@ -149,8 +149,8 @@ export class FinanceService {
   }
 
   async createExpense(dto: CreateExpenseDto, userId: string) {
-    if (dto.category === 'Lainnya' && !dto.notes?.trim()) {
-      throw new BadRequestException('Catatan wajib diisi untuk kategori Lainnya');
+    if (!dto.notes?.trim()) {
+      throw new BadRequestException('Catatan pengeluaran wajib diisi');
     }
     this.validateExpenseDate(dto.date);
 
@@ -179,17 +179,12 @@ export class FinanceService {
 
 
   async updateExpense(expenseId: string, dto: UpdateExpenseDto, userId: string) {
-    if (dto.category === 'Lainnya' && !dto.notes?.trim()) {
-      throw new BadRequestException('Catatan wajib diisi untuk kategori Lainnya');
-    }
-
     const existing = await this.prisma.expense.findUnique({ where: { id: expenseId } });
     if (!existing) throw new BadRequestException('Pengeluaran tidak ditemukan');
 
-    const nextCategory = dto.category ?? existing.category;
     const nextNotes = dto.notes ?? existing.notes ?? '';
-    if (nextCategory === 'Lainnya' && !nextNotes.trim()) {
-      throw new BadRequestException('Catatan wajib diisi untuk kategori Lainnya');
+    if (!nextNotes.trim()) {
+      throw new BadRequestException('Catatan pengeluaran wajib diisi');
     }
 
     this.validateExpenseDate(dto.date);
