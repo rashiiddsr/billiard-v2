@@ -63,30 +63,6 @@ export class UsersService {
     private audit: AuditService,
   ) {}
 
-  private async ensureUniqueContact(email?: string, phoneNumber?: string, excludeUserId?: string) {
-    if (!email && !phoneNumber) return;
-
-    const where: any = {
-      OR: [
-        email ? { email } : undefined,
-        phoneNumber ? { phoneNumber } : undefined,
-      ].filter(Boolean),
-    };
-
-    if (excludeUserId) {
-      where.id = { not: excludeUserId };
-    }
-
-    const conflict = await this.prisma.user.findFirst({
-      where,
-      select: { id: true, email: true, phoneNumber: true },
-    });
-
-    if (!conflict) return;
-    if (email && conflict.email === email) throw new ConflictException('Email sudah digunakan');
-    if (phoneNumber && conflict.phoneNumber === phoneNumber) throw new ConflictException('Nomor HP sudah digunakan');
-  }
-
   async findAll() {
     return this.prisma.user.findMany({
       select: { id: true, name: true, email: true, phoneNumber: true, role: true, isActive: true, profileImageUrl: true, createdAt: true },
@@ -116,7 +92,8 @@ export class UsersService {
       throw new BadRequestException('Role DEVELOPER sudah tidak digunakan');
     }
 
-    await this.ensureUniqueContact(dto.email, dto.phoneNumber);
+    const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    if (existing) throw new ConflictException('Email already exists');
 
     if (dto.pin && dto.role !== Role.OWNER) {
       throw new BadRequestException('PIN hanya boleh untuk role OWNER');
@@ -153,9 +130,10 @@ export class UsersService {
     const existing = await this.prisma.user.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('User not found');
 
-    const nextEmail = dto.email ?? existing.email;
-    const nextPhone = dto.phoneNumber ?? existing.phoneNumber;
-    await this.ensureUniqueContact(nextEmail, nextPhone, id);
+    if (dto.email && dto.email !== existing.email) {
+      const emailExists = await this.prisma.user.findUnique({ where: { email: dto.email } });
+      if (emailExists) throw new ConflictException('Email already exists');
+    }
 
     const nextRole = dto.role ?? existing.role;
     if (nextRole === Role.DEVELOPER) {
@@ -224,9 +202,10 @@ export class UsersService {
     const existing = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!existing) throw new NotFoundException('User not found');
 
-    const nextEmail = dto.email ?? existing.email;
-    const nextPhone = dto.phoneNumber ?? existing.phoneNumber;
-    await this.ensureUniqueContact(nextEmail, nextPhone, userId);
+    if (dto.email && dto.email !== existing.email) {
+      const emailExists = await this.prisma.user.findUnique({ where: { email: dto.email } });
+      if (emailExists) throw new ConflictException('Email already exists');
+    }
 
     const data: any = { name: dto.name, email: dto.email, phoneNumber: dto.phoneNumber };
     if (dto.password) {
@@ -277,7 +256,7 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get('profile/me')
-  @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any, 'MEMBER' as any, 'DEVELOPER' as any)
+  @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any, 'DEVELOPER' as any)
   getOwnProfile(
     @CurrentUser() user: any,
     @Query('startDate') startDate?: string,
@@ -289,13 +268,13 @@ export class UsersController {
   }
 
   @Patch('profile/me')
-  @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any, 'MEMBER' as any, 'DEVELOPER' as any)
+  @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any, 'DEVELOPER' as any)
   updateOwnProfile(@CurrentUser() user: any, @Body() dto: UpdateOwnProfileDto) {
     return this.usersService.updateOwnProfile(user.id, dto);
   }
 
   @Post('profile/me/photo')
-  @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any, 'MEMBER' as any, 'DEVELOPER' as any)
+  @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any, 'DEVELOPER' as any)
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileInterceptor('photo', {
@@ -314,12 +293,12 @@ export class UsersController {
       }),
       limits: { fileSize: 5 * 1024 * 1024 },
       fileFilter: (_req, file, cb) => {
-        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+        const allowed = ['image/jpeg', 'image/png'];
         if (allowed.includes(file.mimetype)) {
           cb(null, true);
           return;
         }
-        cb(new BadRequestException('Format file harus JPG/PNG/WEBP'), false);
+        cb(new BadRequestException('Format file harus JPG/PNG'), false);
       },
     }),
   )
