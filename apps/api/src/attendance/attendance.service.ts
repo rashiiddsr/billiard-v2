@@ -88,6 +88,13 @@ export class AttendanceService {
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
 
+    const approvedLeave = await this.prisma.attendanceLeaveRequest.findFirst({
+      where: { userId, date: todayStart, status: 'APPROVED' as any },
+    });
+    if (approvedLeave) {
+      throw new ConflictException('Anda sudah tercatat izin disetujui hari ini. Hapus data izin terlebih dahulu jika ingin absen.');
+    }
+
     const existing = await this.prisma.attendanceRecord.findFirst({
       where: { userId, shiftId: shift.id, checkInAt: { gte: todayStart, lte: todayEnd } },
     });
@@ -333,8 +340,12 @@ export class AttendanceService {
   async createLeaveRequest(userId: string, role: string, dto: { type: 'SICK' | 'PERMIT' | 'OTHER'; date: string; reason?: string }) {
     const date = new Date(dto.date);
     date.setHours(0, 0, 0, 0);
-    const existing = await this.prisma.attendanceLeaveRequest.findFirst({ where: { userId, date } });
-    if (existing) throw new ConflictException('Pengajuan izin untuk tanggal ini sudah ada');
+    const existingPendingOrApproved = await this.prisma.attendanceLeaveRequest.findFirst({
+      where: { userId, date, status: { in: ['PENDING', 'APPROVED'] as any } },
+    });
+    if (existingPendingOrApproved) {
+      throw new ConflictException('Pengajuan izin untuk tanggal ini sudah ada dan masih aktif');
+    }
 
     return this.prisma.attendanceLeaveRequest.create({
       data: {
@@ -374,5 +385,24 @@ export class AttendanceService {
         approvedAt: new Date(),
       },
     });
+  }
+
+  async deleteLeaveRequest(id: string, actorId: string) {
+    const leave = await this.prisma.attendanceLeaveRequest.findUnique({
+      where: { id },
+      include: { user: { select: { id: true, name: true } } },
+    });
+    if (!leave) throw new NotFoundException('Pengajuan izin tidak ditemukan');
+
+    await this.prisma.attendanceLeaveRequest.delete({ where: { id } });
+    await this.audit.log({
+      userId: actorId,
+      action: AuditAction.DELETE,
+      entity: 'AttendanceLeaveRequest',
+      entityId: id,
+      metadata: { userId: leave.userId, date: leave.date, status: leave.status, type: leave.type },
+    });
+
+    return { success: true };
   }
 }

@@ -158,6 +158,17 @@ export default function AttendancePage() {
     }
   };
 
+  const handleDeleteLeave = async (id: string) => {
+    if (!confirm('Hapus data izin/tidak hadir ini? Karyawan bisa mengajukan ulang setelah dihapus.')) return;
+    try {
+      await api.delete(`/attendance/leave-requests/${id}`);
+      toast.success('Data izin dihapus');
+      await loadRecords();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Gagal menghapus data izin');
+    }
+  };
+
   // Setting
   const openSetting = () => {
     setVenueName(setting?.venueName || '');
@@ -300,7 +311,11 @@ export default function AttendancePage() {
                         </td>
                         <td style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{r.notes || '-'}</td>
                         <td>
-                          {!String(r.id).startsWith('absent-') && !String(r.id).startsWith('leave-') ? (
+                          {String(r.id).startsWith('leave-') ? (
+                            <button className="btn btn-ghost btn-icon btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => handleDeleteLeave(String(r.id).replace('leave-', ''))}>
+                              <Trash2 size={14} />
+                            </button>
+                          ) : !String(r.id).startsWith('absent-') ? (
                             <button className="btn btn-ghost btn-icon btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => handleDeleteRecord(r.id)}>
                               <Trash2 size={14} />
                             </button>
