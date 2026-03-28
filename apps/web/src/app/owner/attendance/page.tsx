@@ -6,7 +6,7 @@ import { asArray } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import {
   CalendarCheck, Clock, MapPin, Settings, Plus, Edit2, Trash2,
-  X, CheckCircle, AlertTriangle, XCircle, Users, Filter,
+  X, CheckCircle, XCircle, Filter,
 } from 'lucide-react';
 import ModalPortal from '@/components/shared/ModalPortal';
 
@@ -40,12 +40,12 @@ interface AttendanceSetting {
 type Tab = 'records' | 'shifts' | 'settings';
 
 const statusBadge = {
-  ON_TIME:  { label: 'Tepat Waktu', cls: 'badge-success',  icon: CheckCircle },
-  LATE:     { label: 'Terlambat',   cls: 'badge-warning',  icon: AlertTriangle },
-  EARLY:    { label: 'Terlalu Awal', cls: 'badge-info',    icon: Clock },
-  REJECTED: { label: 'Ditolak',     cls: 'badge-danger',   icon: XCircle },
-  ABSENT:   { label: 'Tidak Hadir', cls: 'badge-danger',   icon: XCircle },
-  EXCUSED:  { label: 'Tidak Hadir (Izin/Sakit)', cls: 'badge-warning', icon: AlertTriangle },
+  ON_TIME:  { label: 'Hadir', cls: 'badge-success',  icon: CheckCircle },
+  LATE:     { label: 'Hadir', cls: 'badge-success',  icon: CheckCircle },
+  EARLY:    { label: 'Hadir', cls: 'badge-success',  icon: CheckCircle },
+  REJECTED: { label: 'Tidak Hadir', cls: 'badge-danger', icon: XCircle },
+  ABSENT:   { label: 'Tidak Hadir', cls: 'badge-danger', icon: XCircle },
+  EXCUSED:  { label: 'Tidak Hadir', cls: 'badge-danger', icon: XCircle },
 };
 
 export default function AttendancePage() {
@@ -104,9 +104,8 @@ export default function AttendancePage() {
   }, [tab, loadRecords, loadShifts, loadSetting]);
 
   // Stats for the day
-  const onTime   = records.filter((r) => r.status === 'ON_TIME').length;
-  const late     = records.filter((r) => r.status === 'LATE').length;
-  const absent = records.filter((r) => ['ABSENT', 'EXCUSED'].includes(r.status)).length;
+  const present = records.filter((r) => ['ON_TIME', 'LATE', 'EARLY'].includes(r.status)).length;
+  const absent = records.filter((r) => ['REJECTED', 'ABSENT', 'EXCUSED'].includes(r.status)).length;
 
   // Shift CRUD
   const openCreateShift = () => {
@@ -217,16 +216,11 @@ export default function AttendancePage() {
       {tab === 'records' && (
         <div>
           {/* Stats */}
-          <div className="grid-3 mb-4">
+          <div className="grid-2 mb-4">
             <div className="stat-card">
               <div className="stat-card-icon"><CheckCircle size={20} /></div>
-              <div className="stat-card-value" style={{ color: 'var(--color-success)' }}>{onTime}</div>
-              <div className="stat-card-label">Tepat Waktu</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-card-icon"><AlertTriangle size={20} /></div>
-              <div className="stat-card-value" style={{ color: 'var(--color-warning)' }}>{late}</div>
-              <div className="stat-card-label">Terlambat</div>
+              <div className="stat-card-value" style={{ color: 'var(--color-success)' }}>{present}</div>
+              <div className="stat-card-label">Hadir</div>
             </div>
             <div className="stat-card">
               <div className="stat-card-icon"><XCircle size={20} /></div>
