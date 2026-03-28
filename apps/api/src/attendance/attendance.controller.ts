@@ -132,14 +132,6 @@ export class AttendanceController {
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiBearerAuth()
-  @Delete('records/:id')
-  @Roles('OWNER' as any, 'MANAGER' as any)
-  deleteRecord(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.attendanceService.deleteRecord(id, user.id);
-  }
-
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @ApiBearerAuth()
   @Get('shifts')
   @Roles('OWNER' as any, 'MANAGER' as any, 'CASHIER' as any)
   listShifts(@Query('includeInactive') inc?: string) {

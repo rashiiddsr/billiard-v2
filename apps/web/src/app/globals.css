@@ -681,10 +681,7 @@ table.data-table tbody:empty::before {
   background: linear-gradient(145deg, rgba(255,255,255,.18), rgba(255,255,255,.08));
   border: 1px solid rgba(255, 255, 255, 0.22); border-radius: 14px; padding: 14px;
   backdrop-filter: blur(8px);
-  box-shadow: 0 10px 24px rgba(6, 10, 26, 0.25);
-  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
 }
-.display-card:hover { transform: translateY(-2px); border-color: rgba(250, 204, 21, 0.5); box-shadow: 0 14px 26px rgba(5, 6, 18, 0.35); }
 .waiting-card { border-left: 3px solid rgba(250, 204, 21, 0.9); }
 .called-card { border-left: 3px solid rgba(167, 139, 250, 0.95); }
 .queue-number {
@@ -774,7 +771,7 @@ table.data-table tbody:empty::before {
   background: linear-gradient(160deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04));
   backdrop-filter: blur(10px);
   padding: 24px;
-  box-shadow: 0 24px 70px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  box-shadow: 0 24px 70px rgba(0,0,0,0.35);
 }
 .attendance-display-header { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 18px; align-items: flex-start; }
 .attendance-display-header h1 { font-family: 'Syne', sans-serif; color: #fef08a; font-size: clamp(28px, 4vw, 40px); margin-bottom: 6px; }
@@ -792,7 +789,6 @@ table.data-table tbody:empty::before {
   border: 1px solid rgba(250, 204, 21, 0.28);
   background: linear-gradient(165deg, rgba(255,255,255,0.13), rgba(255,255,255,0.05));
   padding: 16px;
-  box-shadow: 0 12px 28px rgba(6, 8, 20, 0.26);
 }
 .attendance-panel-head { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; margin-bottom: 10px; color: #fef3c7; }
 .attendance-qr-image { width: 100%; height: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.24); background: #fff; }
