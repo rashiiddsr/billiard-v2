@@ -4,6 +4,7 @@ import { ordersApi, api, menuApi, paymentsApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { X, Check, Search, AlertTriangle } from 'lucide-react';
 import { formatRupiah } from '@/lib/utils';
+import ModalPortal from '@/components/shared/ModalPortal';
 
 export default function CashierOrdersPage() {
   const [sessions, setSessions] = useState<any[]>([]);
@@ -233,8 +234,9 @@ export default function CashierOrdersPage() {
       </div>
 
       {showPaymentPopup && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div className="card card-padded" style={{ width: '100%', maxWidth: 460 }}>
+        <ModalPortal>
+        <div className="modal-overlay">
+          <div className="modal-card modal-sm">
             <h3 className="card-title mb-4">Checkout F&B Standalone</h3>
             <div style={{ marginBottom: 14, display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>
               <span>Total Bayar</span>
@@ -265,6 +267,7 @@ export default function CashierOrdersPage() {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

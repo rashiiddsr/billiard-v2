@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api, billingApi, packagesApi } from '@/lib/api';
+import ModalPortal from '@/components/shared/ModalPortal';
 import toast from 'react-hot-toast';
 import {
   Play, Square, Plus, Minus, Search, User, Users,
@@ -173,9 +174,11 @@ export default function BillingPage() {
   };
 
   const Overlay = ({ children }: { children: React.ReactNode }) => (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, padding:20 }}>
-      {children}
-    </div>
+    <ModalPortal>
+      <div className="modal-overlay">
+        {children}
+      </div>
+    </ModalPortal>
   );
 
   return (
@@ -239,12 +242,12 @@ export default function BillingPage() {
       {/* Modal Start */}
       {modal === 'start' && sel && (
         <Overlay>
-          <div className="card" style={{ width:'100%', maxWidth:500, maxHeight:'90vh', overflowY:'auto' }}>
-            <div className="card-header" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', position:'sticky', top:0, background:'white', zIndex:1, paddingBottom:14 }}>
+          <div className="modal-card modal-md">
+            <div className="modal-header">
               <h3 className="card-title">Mulai Billing — {sel.name}</h3>
               <button className="btn btn-ghost btn-icon" onClick={close}><X size={18} /></button>
             </div>
-            <div className="card-body">
+            <div className="modal-body">
               <div className="form-group">
                 <label className="form-label">Tipe Tamu</label>
                 <div style={{ display:'flex', gap:8 }}>
@@ -344,7 +347,7 @@ export default function BillingPage() {
                 </div>
               )}
             </div>
-            <div className="card-footer" style={{ display:'flex', gap:8, justifyContent:'flex-end', position:'sticky', bottom:0, background:'var(--color-surface-2)' }}>
+            <div className="modal-footer">
               <button className="btn btn-ghost" onClick={close}>Batal</button>
               <button className="btn btn-success" onClick={handleStart} disabled={busy}>
                 {busy ? 'Memproses...' : <><Play size={15} /> Mulai Billing</>}
@@ -357,9 +360,9 @@ export default function BillingPage() {
       {/* Modal Stop */}
       {modal === 'stop' && sel && (
         <Overlay>
-          <div className="card" style={{ width:'100%', maxWidth:360 }}>
+          <div className="modal-card modal-sm">
             <div className="card-header"><h3 className="card-title">Stop Billing — {sel.name}</h3></div>
-            <div className="card-body">
+            <div className="modal-body">
               {sess(sel) && (() => {
                 const s = sess(sel)!;
                 const name = s.member?.name || s.guestName || '—';
@@ -377,7 +380,7 @@ export default function BillingPage() {
               })()}
               <p style={{ fontSize:13, color:'var(--color-text-muted)' }}>Lanjutkan ke Checkout untuk proses pembayaran.</p>
             </div>
-            <div className="card-footer" style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+            <div className="modal-footer">
               <button className="btn btn-ghost" onClick={close}>Batal</button>
               <button className="btn btn-danger" onClick={handleStop} disabled={busy}>
                 {busy ? 'Menghentikan...' : <><Square size={14} /> Stop</>}
@@ -390,12 +393,12 @@ export default function BillingPage() {
       {/* Modal Extend */}
       {modal === 'extend' && sel && (
         <Overlay>
-          <div className="card" style={{ width:'100%', maxWidth:400 }}>
-            <div className="card-header" style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <div className="modal-card modal-sm">
+            <div className="modal-header">
               <h3 className="card-title">Perpanjang — {sel.name}</h3>
               <button className="btn btn-ghost btn-icon" onClick={close}><X size={18} /></button>
             </div>
-            <div className="card-body">
+            <div className="modal-body">
               {!extPkg && (
                 <div className="form-group">
                   <label className="form-label">Tambah Durasi</label>
@@ -425,7 +428,7 @@ export default function BillingPage() {
                 </div>
               )}
             </div>
-            <div className="card-footer" style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+            <div className="modal-footer">
               <button className="btn btn-ghost" onClick={close}>Batal</button>
               <button className="btn btn-primary" onClick={handleExtend} disabled={busy}>{busy ? 'Memproses...' : 'Perpanjang'}</button>
             </div>
@@ -436,12 +439,12 @@ export default function BillingPage() {
       {/* Modal Move */}
       {modal === 'move' && sel && (
         <Overlay>
-          <div className="card" style={{ width:'100%', maxWidth:360 }}>
-            <div className="card-header" style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <div className="modal-card modal-sm">
+            <div className="modal-header">
               <h3 className="card-title">Pindah Meja</h3>
               <button className="btn btn-ghost btn-icon" onClick={close}><X size={18} /></button>
             </div>
-            <div className="card-body">
+            <div className="modal-body">
               <div className="form-group">
                 <label className="form-label">Meja Tujuan</label>
                 <select className="form-select" value={moveTo} onChange={e => setMoveTo(e.target.value)}>
@@ -453,7 +456,7 @@ export default function BillingPage() {
               </div>
               <p style={{ fontSize:12, color:'var(--color-text-muted)' }}>Tarif meja tujuan harus sama kecuali Owner Lock.</p>
             </div>
-            <div className="card-footer" style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
+            <div className="modal-footer">
               <button className="btn btn-ghost" onClick={close}>Batal</button>
               <button className="btn btn-primary" onClick={handleMove} disabled={busy || !moveTo}>
                 {busy ? 'Memindahkan...' : <><ArrowRightLeft size={14} /> Pindahkan</>}

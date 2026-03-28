@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { Eye, EyeOff, Loader2, LogIn } from 'lucide-react';
+import { Eye, EyeOff, Loader2, ArrowRight, MapPin } from 'lucide-react';
 
 const HOME_MAP: Record<string, string> = {
-  OWNER:     '/owner/dashboard',
-  MANAGER:   '/manager/dashboard',
-  CASHIER:   '/cashier/dashboard',
-  MEMBER:    '/owner/dashboard',
+  OWNER:   '/owner/dashboard',
+  MANAGER: '/manager/dashboard',
+  CASHIER: '/cashier/dashboard',
+  MEMBER:  '/owner/dashboard',
 };
 
 export default function LoginPage() {
@@ -22,25 +22,16 @@ export default function LoginPage() {
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState('');
 
-  // Jika sudah login, redirect ke home
   useEffect(() => {
-    if (!authLoading && user) {
-      router.replace(HOME_MAP[user.role] || '/');
-    }
+    if (!authLoading && user) router.replace(HOME_MAP[user.role] || '/');
   }, [user, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      setError('Email dan password wajib diisi');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
+    if (!email.trim() || !password.trim()) { setError('Email dan password wajib diisi'); return; }
+    setLoading(true); setError('');
     try {
       await login(email.trim(), password);
-      // Redirect ditangani oleh useEffect di atas
     } catch (err: any) {
       const msg = err?.response?.data?.message;
       setError(Array.isArray(msg) ? msg.join(', ') : (msg || 'Email atau password salah'));
@@ -52,7 +43,7 @@ export default function LoginPage() {
   if (authLoading) {
     return (
       <div className="login-page">
-        <Loader2 size={32} style={{ color: 'var(--color-gold)', animation: 'spin 1s linear infinite' }} />
+        <Loader2 size={28} style={{ color: 'var(--color-gold)', animation: 'spin 1s linear infinite' }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -60,10 +51,19 @@ export default function LoginPage() {
 
   return (
     <div className="login-page">
-      <div className="login-card">
+      {/* Decorative orbs */}
+      <div style={{ position: 'absolute', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(201,168,76,0.18) 0%, transparent 70%)', top: -100, left: -100, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(190,24,93,0.12) 0%, transparent 70%)', bottom: -80, right: -60, pointerEvents: 'none' }} />
+
+      <div className="login-card" style={{ animation: 'slideUp 0.3s ease both' }}>
         {/* Brand */}
         <div className="login-brand">
-          <div style={{ fontSize: 36, marginBottom: 8 }}>🎱</div>
+          <div style={{
+            width: 56, height: 56, borderRadius: 16, margin: '0 auto 16px',
+            background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 26, boxShadow: '0 8px 24px rgba(44,20,0,0.3)',
+          }}>🎱</div>
           <div className="login-brand-name">Billiard POS</div>
           <div className="login-brand-sub">Premium Management System</div>
           <div className="login-divider" />
@@ -74,15 +74,10 @@ export default function LoginPage() {
           <div className="form-group">
             <label className="form-label" htmlFor="email">Email</label>
             <input
-              id="email"
-              type="email"
-              className="form-input"
+              id="email" type="email" className="form-input"
               placeholder="nama@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              autoFocus
-              disabled={loading}
+              value={email} onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email" autoFocus disabled={loading}
             />
           </div>
 
@@ -90,25 +85,15 @@ export default function LoginPage() {
             <label className="form-label" htmlFor="password">Password</label>
             <div style={{ position: 'relative' }}>
               <input
-                id="password"
-                type={showPw ? 'text' : 'password'}
-                className="form-input"
+                id="password" type={showPw ? 'text' : 'password'} className="form-input"
                 placeholder="Masukkan password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                disabled={loading}
+                value={password} onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password" disabled={loading}
                 style={{ paddingRight: 44 }}
               />
               <button
-                type="button"
-                onClick={() => setShowPw((v) => !v)}
-                style={{
-                  position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  color: 'var(--color-text-light)', padding: 4,
-                }}
-                tabIndex={-1}
+                type="button" onClick={() => setShowPw((v) => !v)} tabIndex={-1}
+                style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-light)', padding: 4, display: 'flex' }}
               >
                 {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -116,53 +101,33 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div
-              className="alert alert-danger"
-              style={{ fontSize: 13, marginBottom: 16 }}
-            >
-              <span>{error}</span>
+            <div className="alert alert-danger" style={{ marginBottom: 16 }}>
+              <span style={{ fontSize: 13 }}>{error}</span>
             </div>
           )}
 
           <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={loading}
-            style={{ width: '100%', padding: '13px', fontSize: 15, justifyContent: 'center', marginTop: 4 }}
+            type="submit" className="btn btn-primary" disabled={loading}
+            style={{ width: '100%', padding: '13px', fontSize: 15, justifyContent: 'center', marginTop: 4, borderRadius: 'var(--radius-lg)', gap: 10 }}
           >
             {loading ? (
-              <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Masuk...</>
+              <><Loader2 size={17} style={{ animation: 'spin 1s linear infinite' }} /> Masuk...</>
             ) : (
-              <><LogIn size={18} /> Masuk</>
+              <>Masuk <ArrowRight size={17} /></>
             )}
           </button>
         </form>
 
-        {/* Attendance shortcut */}
-        <div style={{
-          marginTop: 20,
-          paddingTop: 16,
-          borderTop: '1px solid var(--color-border)',
-          textAlign: 'center',
-        }}>
-          <a
-            href="/attendance"
-            style={{
-              fontSize: 13,
-              color: 'var(--color-text-muted)',
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-            }}
-          >
-            📍 Halaman Absensi Karyawan
+        <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid rgba(0,0,0,0.07)', textAlign: 'center' }}>
+          <a href="/attendance" style={{ fontSize: 13, color: 'var(--color-text-muted)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, transition: 'color 0.15s' }}>
+            <MapPin size={13} /> Halaman Absensi Karyawan
           </a>
         </div>
       </div>
 
       <style>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
     </div>
   );

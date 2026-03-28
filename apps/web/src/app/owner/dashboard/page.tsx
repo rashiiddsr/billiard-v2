@@ -23,10 +23,10 @@ export default function OwnerDashboard() {
   }, []);
 
   const stats = [
-    { label: 'Pendapatan Hari Ini', value: formatRupiah(report?.totalRevenue || 0), icon: TrendingUp, color: 'var(--color-success)' },
-    { label: 'Sesi Aktif', value: sessions.length, icon: Clock, color: 'var(--color-gold)' },
-    { label: 'Transaksi', value: report?.totalTransactions || 0, icon: CreditCard, color: 'var(--color-info)' },
-    { label: 'Pendapatan F&B', value: formatRupiah(report?.fnbRevenue || 0), icon: ShoppingBag, color: 'var(--color-primary)' },
+    { label: 'Pendapatan Hari Ini', value: formatRupiah(report?.totalRevenue || 0), icon: TrendingUp, iconClass: 'stat-card-icon--green' },
+    { label: 'Sesi Aktif', value: sessions.length, icon: Clock, iconClass: 'stat-card-icon--gold' },
+    { label: 'Transaksi', value: report?.totalTransactions || 0, icon: CreditCard, iconClass: 'stat-card-icon--blue' },
+    { label: 'Pendapatan F&B', value: formatRupiah(report?.fnbRevenue || 0), icon: ShoppingBag, iconClass: 'stat-card-icon--orange' },
   ];
 
   const chartData = report?.hourlyBreakdown || [];
@@ -42,9 +42,9 @@ export default function OwnerDashboard() {
       </div>
 
       <div className="grid-4 mb-6">
-        {stats.map(({ label, value, icon: Icon, color }) => (
+        {stats.map(({ label, value, icon: Icon, iconClass }) => (
           <div key={label} className="stat-card">
-            <div className="stat-card-icon"><Icon size={20} style={{ color }} /></div>
+            <div className={`stat-card-icon ${iconClass}`}><Icon size={20} /></div>
             <div className="stat-card-value" style={{ fontSize: typeof value === 'string' && value.length > 10 ? 16 : undefined }}>{loading ? '...' : value}</div>
             <div className="stat-card-label">{label}</div>
           </div>

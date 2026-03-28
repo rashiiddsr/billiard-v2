@@ -4,6 +4,7 @@ import { financeApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Plus, Edit2, Trash2, X, Filter } from 'lucide-react';
 import { asArray, formatRupiah, formatDate } from '@/lib/utils';
+import ModalPortal from '@/components/shared/ModalPortal';
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<any[]>([]);
@@ -82,21 +83,23 @@ export default function ExpensesPage() {
         </tbody>
       </table></div></div>
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-          <div className="card" style={{ width: '100%', maxWidth: 420 }}>
-            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}><h3 className="card-title">{editId ? 'Edit' : 'Catat'} Pengeluaran</h3><button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={18} /></button></div>
-            <div className="card-body">
+        <ModalPortal>
+        <div className="modal-overlay">
+          <div className="modal-card modal-sm">
+            <div className="modal-header"><h3 className="card-title">{editId ? 'Edit' : 'Catat'} Pengeluaran</h3><button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={18} /></button></div>
+            <div className="modal-body">
               <div className="form-group"><label className="form-label">Kategori</label><select className="form-select" value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}>{cats.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
               <div className="form-group"><label className="form-label">Tanggal</label><input type="date" className="form-input" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} /></div>
               <div className="form-group"><label className="form-label">Jumlah (Rp)</label><input type="number" className="form-input" value={form.amount} onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} placeholder="0" /></div>
               <div className="form-group"><label className="form-label">Catatan</label><input className="form-input" value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Opsional" /></div>
             </div>
-            <div className="card-footer" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <div className="modal-footer">
               <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Batal</button>
               <button className="btn btn-primary" onClick={handleSave} disabled={busy}>{busy ? 'Menyimpan...' : 'Simpan'}</button>
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

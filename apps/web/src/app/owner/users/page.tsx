@@ -4,6 +4,7 @@ import { usersApi } from '@/lib/api';
 import { asArray } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Plus, Edit2, X } from 'lucide-react';
+import ModalPortal from '@/components/shared/ModalPortal';
 
 const ROLES = ['OWNER','MANAGER','CASHIER'];
 
@@ -56,10 +57,11 @@ export default function UsersPage() {
         </tbody>
       </table></div></div>
       {showModal && (
-        <div style={{ position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999,padding:20 }}>
-          <div className="card" style={{ width:'100%',maxWidth:460 }}>
-            <div className="card-header" style={{ display:'flex',justifyContent:'space-between' }}><h3 className="card-title">{editId?'Edit':'Tambah'} User</h3><button className="btn btn-ghost btn-icon" onClick={()=>setShowModal(false)}><X size={18}/></button></div>
-            <div className="card-body">
+        <ModalPortal>
+        <div className="modal-overlay">
+          <div className="modal-card modal-sm">
+            <div className="modal-header"><h3 className="card-title">{editId?'Edit':'Tambah'} User</h3><button className="btn btn-ghost btn-icon" onClick={()=>setShowModal(false)}><X size={18}/></button></div>
+            <div className="modal-body">
               <div className="grid-2">
                 <div className="form-group"><label className="form-label">Nama</label><input className="form-input" value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))}/></div>
                 <div className="form-group"><label className="form-label">Email</label><input type="email" className="form-input" value={form.email} onChange={e=>setForm(p=>({...p,email:e.target.value}))}/></div>
@@ -69,12 +71,13 @@ export default function UsersPage() {
                 <div className="form-group"><label className="form-label">Status</label><select className="form-select" value={form.isActive?'true':'false'} onChange={e=>setForm(p=>({...p,isActive:e.target.value==='true'}))}><option value="true">Aktif</option><option value="false">Nonaktif</option></select></div>
               </div>
             </div>
-            <div className="card-footer" style={{ display:'flex',gap:8,justifyContent:'flex-end' }}>
+            <div className="modal-footer">
               <button className="btn btn-ghost" onClick={()=>setShowModal(false)}>Batal</button>
               <button className="btn btn-primary" onClick={handleSave} disabled={busy}>{busy?'Menyimpan...':'Simpan'}</button>
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

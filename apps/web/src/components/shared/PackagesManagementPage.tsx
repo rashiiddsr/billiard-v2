@@ -5,6 +5,7 @@ import { menuApi, packagesApi } from '@/lib/api';
 import { asArray, formatRupiah } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { Edit2, Plus, Trash2, X } from 'lucide-react';
+import ModalPortal from '@/components/shared/ModalPortal';
 
 type PackageItemType = 'BILLING' | 'MENU_ITEM';
 
@@ -274,14 +275,15 @@ export default function PackagesManagementPage() {
       </div>
 
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-          <div className="card" style={{ width: '100%', maxWidth: 900, maxHeight: '90vh', overflowY: 'auto' }}>
-            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <ModalPortal>
+        <div className="modal-overlay">
+          <div className="modal-card modal-lg">
+            <div className="modal-header">
               <h3 className="card-title">{editId ? 'Edit' : 'Tambah'} Paket</h3>
               <button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={18} /></button>
             </div>
 
-            <div className="card-body">
+            <div className="modal-body">
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 12 }}>
                 <div className="form-group">
                   <label className="form-label">Nama Paket *</label>
@@ -368,12 +370,13 @@ export default function PackagesManagementPage() {
               </div>
             </div>
 
-            <div className="card-footer" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <div className="modal-footer">
               <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Batal</button>
               <button className="btn btn-primary" onClick={handleSave} disabled={busy}>{busy ? 'Menyimpan...' : 'Simpan'}</button>
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

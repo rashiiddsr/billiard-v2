@@ -5,6 +5,7 @@ import { paymentsApi, usersApi } from '@/lib/api';
 import { formatDateTime, formatRupiah } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
 import { Eye, X } from 'lucide-react';
+import ModalPortal from '@/components/shared/ModalPortal';
 
 interface Props { scope: 'cashier' | 'manager' | 'owner' }
 
@@ -100,15 +101,16 @@ export default function TransactionsPage({ scope }: Props) {
       </div>
 
       {detail && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-          <div className="card" style={{ width: '100%', maxWidth: 700 }}>
-            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <ModalPortal>
+        <div className="modal-overlay">
+          <div className="modal-card modal-md">
+            <div className="modal-header">
               <h3 className="card-title">Detail Transaksi</h3>
               <button className="btn btn-ghost btn-icon" onClick={() => setDetail(null)} aria-label="Tutup modal detail transaksi">
                 <X size={16} />
               </button>
             </div>
-            <div className="card-body" style={{ display: 'grid', gap: 8 }}>
+            <div className="modal-body" style={{ display: 'grid', gap: 8 }}>
               <div><strong>ID:</strong> {detail.paymentNumber}</div>
               <div><strong>Meja:</strong> {detail.table}</div>
               <div><strong>Kasir:</strong> {detail.cashier}</div>
@@ -129,6 +131,7 @@ export default function TransactionsPage({ scope }: Props) {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

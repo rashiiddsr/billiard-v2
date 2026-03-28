@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { membersApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Copy, Edit2, Eye, Plus, RefreshCw, Search, X } from 'lucide-react';
+import ModalPortal from '@/components/shared/ModalPortal';
 
 interface Member {
   id: string;
@@ -221,12 +222,13 @@ export default function MembersManagementPage() {
       </div>
 
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-          <div className="card" style={{ width: '100%', maxWidth: 460 }}>
+        <ModalPortal>
+        <div className="modal-overlay">
+          <div className="modal-card modal-sm">
             {credentialResult ? (
               <>
                 <div className="card-header"><h3 className="card-title">✅ Kredensial Baru</h3></div>
-                <div className="card-body">
+                <div className="modal-body">
                   <div className="alert alert-warning" style={{ marginBottom: 12 }}>Simpan kredensial ini sekarang, hanya tampil sekali.</div>
                   <div style={{ background: 'var(--color-gold-pale)', borderRadius: 'var(--radius-md)', padding: 14 }}>
                     <div><strong>Email:</strong> {credentialResult.email}</div>
@@ -240,11 +242,11 @@ export default function MembersManagementPage() {
               </>
             ) : detailMember ? (
               <>
-                <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div className="modal-header">
                   <h3 className="card-title">Detail Member</h3>
                   <button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={16} /></button>
                 </div>
-                <div className="card-body" style={{ display: 'grid', gap: 8 }}>
+                <div className="modal-body" style={{ display: 'grid', gap: 8 }}>
                   <div><strong>Nama:</strong> {detailMember.name}</div>
                   <div><strong>No Member:</strong> {detailMember.memberNumber}</div>
                   <div><strong>Email:</strong> {detailMember.email}</div>
@@ -262,17 +264,17 @@ export default function MembersManagementPage() {
                     </ul>
                   </div>
                 </div>
-                <div className="card-footer" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <div className="modal-footer">
                   <button className="btn btn-primary" onClick={() => setShowModal(false)}>Tutup</button>
                 </div>
               </>
             ) : resetTarget ? (
               <>
-                <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div className="modal-header">
                   <h3 className="card-title">Reset Akun Member</h3>
                   <button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={16} /></button>
                 </div>
-                <div className="card-body">
+                <div className="modal-body">
                   <div className="form-group">
                     <label className="form-label">Nama Member</label>
                     <input className="form-input" value={resetTarget.name} disabled />
@@ -283,18 +285,18 @@ export default function MembersManagementPage() {
                   </div>
                   <div className="alert alert-info">Password default baru akan di-generate otomatis saat reset.</div>
                 </div>
-                <div className="card-footer" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <div className="modal-footer">
                   <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Batal</button>
                   <button className="btn btn-primary" onClick={submitReset} disabled={submitting}>{submitting ? 'Memproses...' : 'Reset Akun'}</button>
                 </div>
               </>
             ) : (
               <>
-                <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div className="modal-header">
                   <h3 className="card-title">{editId ? 'Edit Member' : 'Tambah Member'}</h3>
                   <button className="btn btn-ghost btn-icon" onClick={() => setShowModal(false)}><X size={16} /></button>
                 </div>
-                <div className="card-body">
+                <div className="modal-body">
                   <div className="form-group">
                     <label className="form-label">Nama</label>
                     <input className="form-input" value={name} onChange={(e) => setName(e.target.value)} />
@@ -313,7 +315,7 @@ export default function MembersManagementPage() {
                     </div>
                   )}
                 </div>
-                <div className="card-footer" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <div className="modal-footer">
                   <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Batal</button>
                   <button className="btn btn-primary" onClick={submit} disabled={submitting}>{submitting ? 'Menyimpan...' : editId ? 'Simpan' : 'Buat Member'}</button>
                 </div>
@@ -321,6 +323,7 @@ export default function MembersManagementPage() {
             )}
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );
